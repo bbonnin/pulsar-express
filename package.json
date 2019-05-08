@@ -1,0 +1,23 @@
+{
+  "name": "pulsar-express",
+  "version": "0.1.0",
+  "description": "Simple Pulsar Web Interface",
+  "author": "Bruno Bonnin",
+  "private": true,
+  "scripts": {
+    "dev": "nuxt",
+    "build": "nuxt build",
+    "start": "nuxt start",
+    "generate": "nuxt generate"
+  },
+  "dependencies": {
+    "@nuxtjs/axios": "^5.3.6",
+    "cross-env": "^5.2.0",
+    "element-theme-chalk": "^2.8.2",
+    "element-ui": "^2.4.11",
+    "nuxt": "^2.4.0"
+  },
+  "devDependencies": {
+    "nodemon": "^1.18.9"
+  }
+}
