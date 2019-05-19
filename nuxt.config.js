@@ -34,7 +34,8 @@ export default {
   ** Plugins to load before mounting the App
   */
   plugins: [
-    '@/plugins/element-ui'
+    '@/plugins/element-ui',
+    '~/plugins/lodash'
   ],
 
   /*
@@ -44,11 +45,29 @@ export default {
     // Doc: https://axios.nuxtjs.org/usage
     '@nuxtjs/axios',
   ],
+
   /*
   ** Axios module configuration
   */
   axios: {
     // See https://github.com/nuxt-community/axios-module#options
+    debug: true,
+    proxy: true
+  },
+
+  proxy: {
+    // See https://axios.nuxtjs.org/options, https://github.com/nuxt-community/proxy-module
+    '/api': {
+      target: 'http://fake', // get the target in router
+      pathRewrite: { '^/api/' : '/' },
+      //pathRewrite: { '^/api/' : function (path, req) { 
+      //  return path.replace('/api', '/')
+      //}},
+      router: function(req) {
+        var route = req.url.substring(req.url.indexOf('?') + 1)
+        return route
+      }
+    }
   },
 
   /*

@@ -25,4 +25,12 @@ export default {
   width: 60%;
   margin: auto;
 }
+
+.button-bar {
+  margin-top: 10px;
+}
+
+.breadcrumb {
+  margin: 20px 0 20px 0;
+}
 </style>

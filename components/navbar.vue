@@ -1,15 +1,15 @@
 <template>
   <header class="navbar">
-    <router-link to="/">
+    <nuxt-link to="/">
       <img alt="pulsar-logo" class="logo" src="/pulsar.svg" />
-    </router-link>
+    </nuxt-link>
     <div class="links">
       <nav class="nav-links">
         <div class="nav-item">
-          <router-link to="/connections">Connections</router-link>
+          <nuxt-link to="/clusters">Clusters</nuxt-link>
         </div>
         <div class="nav-item">
-          <nuxt-link to="/clusters">Clusters</nuxt-link>
+          <nuxt-link to="/connections">Connections</nuxt-link>
         </div>
       </nav>
     </div>
@@ -86,7 +86,7 @@ a {
   cursor: pointer;
 }
 
-.nav-item .nuxt-link-exact-active, .nav-item a:hover {
+.nav-item .nuxt-link-exact-active, .nav-item .nuxt-link-active, .nav-item a:hover {
   margin-bottom: -2px;
   border-bottom: 2px solid #188fff;
 }
