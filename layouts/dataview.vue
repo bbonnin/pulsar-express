@@ -22,7 +22,7 @@ export default {
 }
 
 .dataview-container .dataview {
-  width: 60%;
+  width: 80%;
   margin: auto;
 }
 

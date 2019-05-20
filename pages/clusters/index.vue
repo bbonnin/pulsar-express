@@ -4,9 +4,7 @@
       <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
       <el-breadcrumb-item>Clusters</el-breadcrumb-item>
     </el-breadcrumb>
-    <div v-if="loading" class="loading">
-      <i class="el-icon-loading"/><span class="loading-msg">Loading...</span>
-    </div>
+    <loading v-if="loading" />
     <div v-else-if="clusters.length > 0">
       <el-table
         :data="clusters"
@@ -33,7 +31,7 @@
           width="120">
           <template slot-scope="scope">
             <el-button
-              @click.native.prevent="showTopics(scope.$index)"
+              @click.native.prevent="showTopics(scope.row)"
               type="text"
               size="small">
               Topics
@@ -57,10 +55,17 @@
 </template>
 
 <script>
-import { getConnections } from '@/services/storage'
+import loading from '@/components/loading'
+import { mapState, mapActions } from 'vuex'
 
 export default {
+  name: 'clusters',
+
   layout: 'dataview',
+
+  components: {
+    loading
+  },
 
   data() {
     return {
@@ -69,42 +74,49 @@ export default {
     }
   },
 
+  computed: mapState('connections', ['connections']),
+
   mounted() {
     this.reload()
   },
 
   methods: {
-    showTopics: function (idx) {
-      this.$router.push({ path: '/clusters/' + idx })
+    ...mapActions('context', ['setCluster']),
+
+    showTopics(cluster) {
+      this.setCluster(cluster)
+      this.$router.push({ path: '/topics' })
     },
 
-    deleteCluster: function (idx) {
+    deleteCluster(idx) {
       this.clusters.splice(idx, 1)
       this.updateStorage()
     },
 
-    addCluster: function (name, url) {
+    addCluster(name, url) {
       this.clusters.push({ name, url })
       this.updateStorage()
     },
 
     async reload() {
-      this.loading = true
-      this.clusters = []
+      await this.$store.dispatch('connections/fetchConnections')
 
-      const connections = getConnections()
+      this.loading = true
+      const availableClusters = []
+
       let queries = []
-      connections.forEach(connection => queries.push(this.$axios.$get('/api/admin/v2/clusters?' + connection.url)))
+      this.connections.forEach(connection => queries.push(this.$axios.$get('/api/admin/v2/clusters?' + connection.url)))
 
       const clusterList = await Promise.all(queries)
 
-      clusterList.forEach((clusters, idx) => {
-        clusters.forEach(async cluster => {
-          const clusterInfos = await this.$axios.$get('/api/admin/v2/clusters/' + cluster + '?' + connections[idx].url)
-          this.clusters.push({ name: cluster, serviceUrl: clusterInfos.serviceUrl, brokerServiceUrl: clusterInfos.brokerServiceUrl })
-        })
-      })
+      for (const [idx, clusters] of clusterList.entries()) {
+        for (const cluster of clusters) {
+          const clusterInfos = await this.$axios.$get('/api/admin/v2/clusters/' + cluster + '?' + this.connections[idx].url)
+          availableClusters.push({ name: cluster, serviceUrl: clusterInfos.serviceUrl, brokerServiceUrl: clusterInfos.brokerServiceUrl })
+        }
+      }
 
+      this.clusters = availableClusters
       this.loading = false
     }
   },
@@ -118,12 +130,5 @@ export default {
 </script>
 
 <style scoped>
-.loading {
-  margin: 20px 0 20px 0;
-}
-.loading-msg {
-  font-size: 16px;
-  color: #606266;
-  margin-left: 5px;
-}
+
 </style>
