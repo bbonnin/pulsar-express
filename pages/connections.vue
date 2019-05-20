@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="dataview">
-      <div v-if="connections.length > 0">
+      <div v-if="connections && connections.length > 0">
         <el-table
           :data="connections"
           style="width: 100%"
@@ -66,15 +66,16 @@
 </template>
 
 <script>
-import { getConnections, addConnection, removeConnection } from '@/services/storage'
+import { mapState, mapActions } from 'vuex'
 
 export default {
+  name: 'connections',
+
   layout: 'dataview',
 
   data() {
     return {
       addConnectionVisible: false,
-      connections: [],
       withSecurity: false,
       connection: {
         name: 'My local connection',
@@ -94,24 +95,24 @@ export default {
     }
   },
 
+  computed: mapState('connections', ['connections']),
+
   mounted() {
-    this.connections = getConnections()
+    this.$store.dispatch('connections/fetchConnections')
   },
 
   methods: {
     createConnection: function (formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.connections = addConnection(this.connection)
+          this.addConnection(this.connection)
           this.addConnectionVisible = false
         }
         return valid
       })
     },
 
-    deleteConnection: function (idx) {
-      this.connections = removeConnection(idx)
-    }
+    ...mapActions('connections', ['deleteConnection', 'addConnection'])
   },
 
   head() {

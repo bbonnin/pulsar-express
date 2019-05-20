@@ -4,6 +4,18 @@
 
 <script>
 export default {
-  layout: 'dataview'
+  name: 'cluster',
+
+  layout: 'dataview',
+
+  mounted() {
+    
+  },
+
+  head() {
+    return {
+      title: 'pulsar-express - cluster'
+    }
+  }
 }
 </script>
