@@ -2,47 +2,49 @@
   <div class="dataview">
     <el-breadcrumb separator="/" class="breadcrumb">
       <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
-      <el-breadcrumb-item>Topics</el-breadcrumb-item>
+      <el-breadcrumb-item>Functions</el-breadcrumb-item>
     </el-breadcrumb>
     <loading v-if="loading" />
-    <div v-else-if="topics.length > 0">
+    <div v-else-if="functions.length > 0">
       <el-table
-        :data="topics"
+        :data="functions"
         style="width: 100%"
         height_="800"
         :default-sort = "{prop: 'name', order: 'ascending'}">
         <el-table-column
           fixed
-          prop="name"
           label="Name"
           sortable
           width="200">
-        </el-table-column>
-        <el-table-column
-          label="Persistent">
           <template slot-scope="scope">
-            <i class="el-icon-check" v-if="scope.row.persistent"></i>
+            {{scope.row.infos.tenant}}/{{scope.row.infos.namespace}}/{{scope.row.infos.name}}
           </template>
         </el-table-column>
         <el-table-column
-          prop="stats.msgRateIn"
-          label="Msg/s in"
-          :formatter="cellFormatFloat">
+          prop="infos.runtime"
+          label="Runtime">
         </el-table-column>
         <el-table-column
-          prop="stats.msgRateOut"
-          label="Msg/s out"
-          :formatter="cellFormatFloat">
+          prop="infos.className"
+          label="Class name">
         </el-table-column>
         <el-table-column
-          prop="stats.msgThroughputIn"
-          label="Byte/s in"
-          :formatter="cellFormatFloat">
+          label="Input topics">
+          <template slot-scope="scope">
+            <span v-for="(input,key) in scope.row.infos.inputSpecs" :key="key">
+              {{getSimpleTopicName(key)}}<br/>
+            </span>
+          </template>
         </el-table-column>
         <el-table-column
-          prop="stats.msgThroughputOut"
-          label="Byte/s out"
-          :formatter="cellFormatFloat">
+          prop="infos.output"
+          label="Output topic"
+          :formatter="cellFormatSimpleTopicName">
+        </el-table-column>
+        <el-table-column
+          prop="infos.logTopic"
+          label="Log topic"
+          :formatter="cellFormatSimpleTopicName">
         </el-table-column>
         <el-table-column
           fixed="right"
@@ -63,7 +65,7 @@
       <el-alert
         title="Bad news"
         type="warning"
-        description="Cannot get any information about topics. Maybe you haven't defined any connections or the brokers are unreachable."
+        description="Cannot get any information about functions. Maybe you haven't defined any connections or the brokers are unreachable."
         show-icon>
       </el-alert>
     </div>
@@ -74,12 +76,12 @@
 </template>
 
 <script>
-import { cellFormatFloat } from '@/services/utils'
+import { cellFormatFloat, cellFormatSimpleTopicName, getSimpleTopicName } from '@/services/utils'
 import loading from '@/components/loading'
 import { mapState, mapActions } from 'vuex'
 
 export default {
-  name: 'topics',
+  name: 'functions',
 
   layout: 'dataview',
 
@@ -90,7 +92,7 @@ export default {
   data() {
     return {
       loading: false,
-      topics: []
+      functions: []
     }
   },
 
@@ -102,12 +104,20 @@ export default {
 
   methods: {
     cellFormatFloat,
+    cellFormatSimpleTopicName,
+    getSimpleTopicName,
 
-    ...mapActions('context', ['setTopic', 'setTopics']),
+    ...mapActions('context', ['setFunction', 'setFunctions']),
+
+    multiTopic(row, column, cellValue, index) {
+      let topics = ''
+
+      return ''
+    },
 
     showDetails(id) {
-      this.setTopic(id)
-      this.$router.push({ path: '/topics/' + id })
+      this.setFunction(id)
+      this.$router.push({ path: '/functions/' + id })
     },
 
     async reload() {
@@ -135,7 +145,7 @@ export default {
         console.error(err)
       }
 
-      const topicsByNs = []
+      const functionsByNs = []
 
       for (const [idx, tenantList] of tenants.entries()) {
         for (const tenant of tenantList) {
@@ -149,10 +159,10 @@ export default {
 
           for (const namespace of namespaces) {
             try {
-              const nsTopics = await this.$axios.$get('/api/admin/v2/namespaces/' + namespace + '/topics?' + connections[idx].url)
+              const names = await this.$axios.$get('/api/admin/v3/functions/' + namespace + '?' + connections[idx].url)
 
-              if (nsTopics && nsTopics.length > 0) {
-                topicsByNs.push({ connection: connections[idx].url, names: nsTopics })
+              if (names && names.length > 0) {
+                functionsByNs.push({ connection: connections[idx].url, namespace, names })
               }
             }
             catch (err) {
@@ -162,21 +172,20 @@ export default {
         }
       }
 
-      this.topics = []
+      this.functions = []
 
-      for (const topics of topicsByNs) {
-        for (const topic of topics.names) {
-          const topicStats = await this.$axios.$get('/api/admin/v2/' + topic.replace(":/","") + '/stats?' + topics.connection)
-          this.topics.push({
-            id: this.topics.length,
-            connection: topics.connection,
-            name: topic.substring(topic.indexOf('://') + 3), 
-            persistent: topic.startsWith('persistent'), 
-            stats: topicStats })
+      for (const functions of functionsByNs) {
+        for (const fctName of functions.names) {
+          const url = '/api/admin/v3/functions/' + functions.namespace + '/' + fctName + '?' + functions.connection
+          const fctSInfos = await this.$axios.$get(url)
+          this.functions.push({
+            id: this.functions.length,
+            connection: functions.connection,
+            infos: fctSInfos })
         }
       }
 
-      this.setTopics(this.topics)
+      this.setFunctions(this.functions)
 
       this.loading = false
     }
@@ -184,7 +193,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - topics'
+      title: 'pulsar-express - functions'
     }
   }
 }
