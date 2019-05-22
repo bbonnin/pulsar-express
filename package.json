@@ -3,7 +3,15 @@
   "version": "0.1.0",
   "description": "Simple Pulsar Web Interface",
   "author": "Bruno Bonnin",
-  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bbonnin/pulsar-express.git"
+  },
+  "bugs": {
+    "url": "https://github.com/bbonnin/pulsar-express/issues"
+  },
+  "homepage": "https://github.com/bbonnin/pulsar-express#readme",
+  "license": "Apache-2.0",
   "scripts": {
     "dev": "nuxt",
     "build": "nuxt build",
@@ -17,10 +25,14 @@
     "element-theme-chalk": "^2.8.2",
     "element-ui": "^2.4.11",
     "nuxt": "^2.4.0",
+    "nuxt-start": "^2.7.1",
     "vue-lodash": "^2.0.2",
     "vue-moment": "^4.0.0"
   },
   "devDependencies": {
     "nodemon": "^1.18.9"
+  },
+  "bin": {
+    "pulsar-express": "./pulsar-express.js"
   }
 }
