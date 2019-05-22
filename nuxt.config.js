@@ -3,6 +3,12 @@ import pkg from './package'
 export default {
   mode: 'spa',
 
+  buildDir: __dirname + '/.nuxt',
+
+  dir: {
+    static: __dirname + '/static'
+  },
+
   /*
   ** Headers of the page
   */
