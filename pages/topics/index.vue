@@ -34,19 +34,23 @@ subscriptions: {talk/demo/hello: {…}}
         </el-table-column>
         <el-table-column
           prop="stats.msgRateIn"
-          label="Msg/s in">
+          label="Msg/s in"
+          :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
           prop="stats.msgRateOut"
-          label="Msg/s out">
+          label="Msg/s out"
+          :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
           prop="stats.msgThroughputIn"
-          label="Byte/s in">
+          label="Byte/s in"
+          :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
           prop="stats.msgThroughputOut"
-          label="Byte/s out">
+          label="Byte/s out"
+          :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
           fixed="right"
@@ -67,7 +71,7 @@ subscriptions: {talk/demo/hello: {…}}
       <el-alert
         title="Bad news"
         type="warning"
-        description="Cannot get any information about topics. Maybe you haven't defined any connections."
+        description="Cannot get any information about topics. Maybe you haven't defined any connections or the brokers are unreachable."
         show-icon>
       </el-alert>
     </div>
@@ -78,6 +82,7 @@ subscriptions: {talk/demo/hello: {…}}
 </template>
 
 <script>
+import { cellFormatFloat } from '@/services/utils'
 import loading from '@/components/loading'
 import { mapState, mapActions } from 'vuex'
 
@@ -104,6 +109,8 @@ export default {
   },
 
   methods: {
+    cellFormatFloat,
+
     ...mapActions('context', ['setTopic', 'setTopics']),
 
     showDetails(id) {
@@ -127,13 +134,27 @@ export default {
       
       connections.forEach(connection => queries.push(this.$axios.$get('/api/admin/v2/tenants?' + connection.url)))
 
-      const tenants = await Promise.all(queries)
+      let tenants = []
+
+      try {
+        tenants = await Promise.all(queries)
+      }
+      catch (err) {
+        console.error(err)
+      }
 
       const topicsByNs = []
 
       for (const [idx, tenantList] of tenants.entries()) {
         for (const tenant of tenantList) {
-          const namespaces = await this.$axios.$get('/api/admin/v2/namespaces/' + tenant + '?' + connections[idx].url)
+          let namespaces;
+          try {
+            namespaces = await this.$axios.$get('/api/admin/v2/namespaces/' + tenant + '?' + connections[idx].url)
+          }
+          catch (err) {
+            console.error(err)
+          }
+
           for (const namespace of namespaces) {
             try {
               const nsTopics = await this.$axios.$get('/api/admin/v2/namespaces/' + namespace + '/topics?' + connections[idx].url)
