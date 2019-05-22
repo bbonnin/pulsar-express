@@ -15,7 +15,7 @@
           prop="name"
           label="Name"
           sortable
-          width="100">
+          width="200">
         </el-table-column>
         <el-table-column
           prop="brokerServiceUrl"
@@ -28,13 +28,19 @@
         <el-table-column
           fixed="right"
           label="Actions"
-          width="120">
+          width="300">
           <template slot-scope="scope">
             <el-button
               @click.native.prevent="showTopics(scope.row)"
               type="text"
               size="small">
               Topics
+            </el-button>
+            <el-button
+              @click.native.prevent="showFunctions(scope.row)"
+              type="text"
+              size="small">
+              Functions
             </el-button>
           </template>
         </el-table-column>
@@ -86,6 +92,11 @@ export default {
     showTopics(cluster) {
       this.setCluster(cluster)
       this.$router.push({ path: '/topics' })
+    },
+
+    showFunctions(cluster) {
+      this.setCluster(cluster)
+      this.$router.push({ path: '/functions' })
     },
 
     deleteCluster(idx) {

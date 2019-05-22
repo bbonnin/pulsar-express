@@ -12,6 +12,9 @@
           <nuxt-link to="/topics">Topics</nuxt-link>
         </div>
         <div class="nav-item">
+          <nuxt-link to="/functions">Functions</nuxt-link>
+        </div>
+        <div class="nav-item">
           <nuxt-link to="/connections">Connections</nuxt-link>
         </div>
       </nav>

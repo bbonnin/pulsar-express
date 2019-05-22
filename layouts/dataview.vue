@@ -33,4 +33,10 @@ export default {
 .breadcrumb {
   margin: 20px 0 20px 0;
 }
+
+.simple-msg {
+  font-size: 16px;
+  color: #606266;
+  margin-left: 5px;
+}
 </style>
