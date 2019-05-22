@@ -44,7 +44,7 @@
       <el-alert
         title="Bad news"
         type="warning"
-        description="Cannot get any information about clusters. Maybe you haven't defined any connections."
+        description="Cannot get any information about clusters. Maybe you haven't defined any connections or the brokers are unreachable."
         show-icon>
       </el-alert>
     </div>
@@ -107,12 +107,24 @@ export default {
       let queries = []
       this.connections.forEach(connection => queries.push(this.$axios.$get('/api/admin/v2/clusters?' + connection.url)))
 
-      const clusterList = await Promise.all(queries)
+      let clusterList = []
+
+      try {
+        clusterList = await Promise.all(queries)
+      }
+      catch (err) {
+        console.error(err)
+      }
 
       for (const [idx, clusters] of clusterList.entries()) {
         for (const cluster of clusters) {
-          const clusterInfos = await this.$axios.$get('/api/admin/v2/clusters/' + cluster + '?' + this.connections[idx].url)
-          availableClusters.push({ name: cluster, serviceUrl: clusterInfos.serviceUrl, brokerServiceUrl: clusterInfos.brokerServiceUrl })
+          try {
+            const clusterInfos = await this.$axios.$get('/api/admin/v2/clusters/' + cluster + '?' + this.connections[idx].url)
+            availableClusters.push({ name: cluster, serviceUrl: clusterInfos.serviceUrl, brokerServiceUrl: clusterInfos.brokerServiceUrl })
+          }
+          catch (err) {
+            console.error(err)
+          }
         }
       }
 
