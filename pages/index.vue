@@ -3,12 +3,13 @@
     <div>
       <div class="logo">
         <img src="/pulsar.svg"/>
-      </div>    
+      </div>
+      <h1 class="title">EXPRESS</h1>
       <h2 class="subtitle">
         Simple Web Interface for Apache Pulsar
       </h2>
       <div class="links">
-        <el-button type="primary" @click="$router.push('/connections')">Let's start !</el-button>
+        <el-button type="primary" @click="$router.push('/overview')">Let's start !</el-button>
       </div>
     </div>
   </section>
@@ -37,10 +38,11 @@ export default {
   font-family: 'Quicksand', 'Source Sans Pro', -apple-system, BlinkMacSystemFont,
     'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   display: block;
-  font-weight: 300;
-  font-size: 100px;
-  color: #35495e;
+  font-weight: 600;
+  font-size: 80px;
+  color: #454e56;
   letter-spacing: 1px;
+  margin-bottom: 50px;
 }
 
 .subtitle {

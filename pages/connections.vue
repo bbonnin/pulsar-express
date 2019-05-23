@@ -23,8 +23,8 @@
             <template slot-scope="scope">
               <el-button
                 @click.native.prevent="deleteConnection(scope.$index)"
-                type="text"
-                size="small">
+                type="danger" plain
+                size="mini">
                 Delete
               </el-button>
             </template>

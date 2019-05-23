@@ -1,12 +1,12 @@
 <template>
-  <div class="dataview">
+  <div class="dataview" v-loading="loading">
     <div v-if="currentTopic" v-loading="loading">
       <el-breadcrumb separator="/" class="breadcrumb">
-        <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/overview' }">Home</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/clusters' }">{{this.currentTopic.cluster.name}}</el-breadcrumb-item>
         <el-breadcrumb-item :to="{ path: '/topics' }">Topics</el-breadcrumb-item>
         <el-breadcrumb-item>{{ fullname }}</el-breadcrumb-item>
       </el-breadcrumb>
-      <!--loading v-if="loading" /-->
       
       <h3>Stats</h3>
       <el-table
@@ -14,32 +14,32 @@
         style="width: 100%"
         height_="800">
         <el-table-column
-          prop="stats.msgRateIn"
+          prop="msgRateIn"
           label="Msg/s in"
           :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
-          prop="stats.msgRateOut"
+          prop="msgRateOut"
           label="Msg/s out"
           :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
-          prop="stats.msgThroughputIn"
+          prop="msgThroughputIn"
           label="Byte/s in"
           :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
-          prop="stats.msgThroughputOut"
+          prop="msgThroughputOut"
           label="Byte/s out"
           :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
-          prop="stats.averageMsgSize"
+          prop="averageMsgSize"
           label="Avg msg size (bytes)"
           :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
-          prop="stats.storageSize"
+          prop="storageSize"
           label="Storage size (bytes)">
         </el-table-column>
       </el-table>
@@ -132,6 +132,10 @@
           label="Unacked">
         </el-table-column>
       </el-table>
+
+      <div class="button-bar">
+        <el-button @click="reload()">Reload</el-button>
+      </div>
     </div>
     <div v-else>
       <el-alert
@@ -141,6 +145,8 @@
         show-icon>
       </el-alert>
     </div>
+
+    
   </div>
 </template>
 
@@ -160,7 +166,8 @@ export default {
 
   data() {
     return {
-      loading: false
+      loading: false,
+      stats: null
     }
   },
 
@@ -169,7 +176,6 @@ export default {
 
     currentTopic() {
       if (this.topics && this.topics.length > this.topic) {
-        console.log(this.topics[this.topic])
         return this.topics[this.topic]
       }
 
@@ -182,21 +188,39 @@ export default {
     },
 
     infos() {
-      return [ this.currentTopic ]
+      if (this.stats) {
+        return [ this.stats ]
+      }
+      return []
     },
 
     subscriptions() {
-      return this._.map(this.currentTopic.stats.subscriptions, (infos, name) => ({ name, ...infos}))
+      if (this.stats) {
+        return this._.map(this.stats.subscriptions, (infos, name) => ({ name, ...infos}))
+      }
+      return []
     }
   },
 
   mounted() {
-    
+    if (this.currentTopic) {
+      this.reload()
+    }
   },
 
   methods: {
     cellFormatFloat,
-    cellFormatDateSince
+    cellFormatDateSince,
+
+    async reload() {
+      this.loading = true
+      console.log(this.currentTopic)
+      const persist = this.currentTopic.persistent ? "persistent" : "non-persistent"
+      const topicStats = await this.$axios.$get(
+        '/api/admin/v2/' + persist + '/' + this.currentTopic.name + '/stats?' + this.currentTopic.cluster.serviceUrl)
+      this.stats = topicStats
+      this.loading = false
+    }
   },
 
   head() {
