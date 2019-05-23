@@ -1,12 +1,15 @@
 <template>
   <header class="navbar">
-    <nuxt-link to="/">
+    <nuxt-link to="/overview">
       <img alt="pulsar-logo" class="logo" src="/pulsar.svg" />
     </nuxt-link>
     <div class="links">
       <nav class="nav-links">
         <div class="nav-item">
           <nuxt-link to="/clusters">Clusters</nuxt-link>
+        </div>
+        <div class="nav-item">
+          <nuxt-link to="/brokers">Brokers</nuxt-link>
         </div>
         <div class="nav-item">
           <nuxt-link to="/topics">Topics</nuxt-link>

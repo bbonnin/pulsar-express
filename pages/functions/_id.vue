@@ -2,7 +2,8 @@
   <div class="dataview">
     <div v-if="currentFunction" v-loading="loading">
       <el-breadcrumb separator="/" class="breadcrumb">
-        <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/overview' }">Home</el-breadcrumb-item>
+        <el-breadcrumb-item :to="{ path: '/clusters' }">{{currentFunction.cluster.name}}</el-breadcrumb-item>
         <el-breadcrumb-item :to="{ path: '/functions' }">Functions</el-breadcrumb-item>
         <el-breadcrumb-item>{{ fullname }}</el-breadcrumb-item>
       </el-breadcrumb>
@@ -80,8 +81,12 @@
           </el-table-column>
           <el-table-column
             prop="status.running"
-            label="Running"
-            :formatter="cellFormatBoolean">
+            label="Running">
+            <template slot-scope="scope">
+              <el-tag
+                :type="scope.row.status.running ? 'success' : 'warning'"
+                disable-transitions>{{scope.row.status.running ? 'Yes' : 'No'}}</el-tag>
+            </template>
           </el-table-column>
           <el-table-column
             prop="status.averageLatency"
@@ -93,7 +98,7 @@
           </el-table-column>
           <el-table-column
             prop="status.numRestarts"
-            label="estarts">
+            label="Restarts">
           </el-table-column>
           <el-table-column
             prop="status.numSuccessfullyProcessed"
@@ -112,6 +117,11 @@
       <p v-else class="simple-msg">
         No instance.
       </p>
+      <div class="button-bar">
+        <el-button @click="reload()">Reload</el-button>
+        <el-button type="success" @click="startAllInstances()">Start all instances</el-button>
+        <el-button type="warning" @click="stopAllInstances()">Stop all instances</el-button>
+      </div>
     </div>
     <div v-else>
       <el-alert
@@ -130,7 +140,7 @@ import loading from '@/components/loading'
 import { mapState, mapActions } from 'vuex'
 
 export default {
-  name: 'topic',
+  name: 'function',
 
   layout: 'dataview',
 
@@ -178,10 +188,46 @@ export default {
     cellFormatBoolean,
 
     async reload() {
-      const url = '/api/admin/v3/functions/' + this.fullname + '/status?' + this.currentFunction.connection
+      const url = '/api/admin/v3/functions/' + this.fullname + '/status?' + this.currentFunction.cluster.serviceUrl
       const status = await this.$axios.$get(url)
       this.instances = status.instances
       console.log(status)
+    },
+
+    stopAllInstances() {
+      const url = '/api/admin/v3/functions/' + this.fullname + '/stop?' + this.currentFunction.cluster.serviceUrl
+      this.$axios.$post(url)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Stop completed'
+          })
+          setTimeout(this.reload, 1000)
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Stop error: ' + err
+          })
+        })
+    },
+
+    startAllInstances() {
+      const url = '/api/admin/v3/functions/' + this.fullname + '/start?' + this.currentFunction.cluster.serviceUrl
+      this.$axios.$post(url)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Start completed'
+          })
+          setTimeout(this.reload, 1000)
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Start error: ' + err
+          })
+        })
     }
   },
 

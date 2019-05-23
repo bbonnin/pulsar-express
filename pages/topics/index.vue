@@ -1,7 +1,8 @@
 <template>
   <div class="dataview">
     <el-breadcrumb separator="/" class="breadcrumb">
-      <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/overview' }">Home</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/clusters' }">{{cluster ? cluster.name : 'All clusters'}}</el-breadcrumb-item>
       <el-breadcrumb-item>Topics</el-breadcrumb-item>
     </el-breadcrumb>
     <loading v-if="loading" />
@@ -16,10 +17,11 @@
           prop="name"
           label="Name"
           sortable
-          width="200">
+          width="300">
         </el-table-column>
         <el-table-column
-          label="Persistent">
+          label="Persistent"
+          width="100">
           <template slot-scope="scope">
             <i class="el-icon-check" v-if="scope.row.persistent"></i>
           </template>
@@ -47,13 +49,19 @@
         <el-table-column
           fixed="right"
           label="Actions"
-          width="120">
+          width="200">
           <template slot-scope="scope">
             <el-button
               @click.native.prevent="showDetails(scope.row.id)"
-              type="text"
-              size="small">
+              type="primary" plain round
+              size="mini">
               Details
+            </el-button>
+            <el-button
+              @click.native.prevent="deleteTopic(scope.row.id)"
+              type="danger" plain round
+              size="mini">
+              Delete
             </el-button>
           </template>
         </el-table-column>
@@ -67,9 +75,35 @@
         show-icon>
       </el-alert>
     </div>
+
     <div class="button-bar">
-      <el-button type="primary" @click="reload()">Reload</el-button>
+      <el-button type="primary" @click="createVisible = true">Create topic</el-button>
+      <el-button @click="reload()">Reload</el-button>
     </div>
+
+    <el-dialog title="Create a topic" :visible.sync="createVisible">
+      <el-form ref="createForm" :model="newTopic" :rules="topicRules" label-width="200px">
+        <el-form-item label="Type">
+          <el-radio-group v-model="newTopic.type">
+            <el-radio label="persistent">Persistent</el-radio>
+            <el-radio label="non-persistent">Non-persistent</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="Tenant" prop="tenant">
+          <el-input v-model="newTopic.tenant"></el-input>
+        </el-form-item>
+        <el-form-item label="Namespace" prop="namespace">
+          <el-input v-model="newTopic.namespace"></el-input>
+        </el-form-item>
+        <el-form-item label="Name" prop="name">
+          <el-input v-model="newTopic.name"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="createTopic('createForm')">Create</el-button>
+          <el-button @click="createVisible = false">Cancel</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -89,6 +123,24 @@ export default {
 
   data() {
     return {
+      createVisible: false,
+      newTopic: {
+        type: 'persistent',
+        tenant: 'public',
+        namespace: 'default',
+        name: ''
+      },
+      topicRules: {
+        tenant: [
+          { required: true, message: 'Please set a tenant name', trigger: 'blur' }
+        ],
+        namespace: [
+          { required: true, message: 'Please set a namespace name', trigger: 'blur' }
+        ],
+        name: [
+          { required: true, message: 'Please set a topic name', trigger: 'blur' }
+        ],
+      },
       loading: false,
       topics: []
     }
@@ -105,6 +157,60 @@ export default {
 
     ...mapActions('context', ['setTopic', 'setTopics']),
 
+    createTopic: function (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          const fullname = this.newTopic.type + '/' + 
+            this.newTopic.tenant + '/' + this.newTopic.namespace + '/' + this.newTopic.name
+          this.$axios.$put('/api/admin/v2/' + fullname + '?' + this.cluster.serviceUrl)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Create completed'
+              })
+              this.reload()
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Create error: ' + err
+              })
+            })
+          this.createVisible = false
+          this.newTopic.name = ''
+        }
+        return valid
+      })
+    },
+
+    deleteTopic(id) {      
+      this.$confirm('This will permanently delete the topic. Continue?', 'Warning', {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        })
+        .then(() => {
+          const topic = this.topics[id]
+          let fullname = topic.persistent ? 'persistent/' : 'non-persistent'
+          fullname += topic.name
+
+          this.$axios.$delete('/api/admin/v2/' + fullname + '?' + topic.cluster.serviceUrl)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Delete completed'
+              })
+              this.reload()
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Delete error: ' + err
+              })
+            })
+        })
+    },
+
     showDetails(id) {
       this.setTopic(id)
       this.$router.push({ path: '/topics/' + id })
@@ -112,8 +218,6 @@ export default {
 
     async reload() {
       this.loading = true
-      let queries = []
-
       let connections = []
 
       if (this.cluster) {
@@ -123,57 +227,20 @@ export default {
         await this.$store.dispatch('connections/fetchConnections')
         connections = this.$store.state.connections.connections
       }
-      
-      connections.forEach(connection => queries.push(this.$axios.$get('/api/admin/v2/tenants?' + connection.url)))
 
-      let tenants = []
-
-      try {
-        tenants = await Promise.all(queries)
-      }
-      catch (err) {
-        console.error(err)
-      }
-
-      const topicsByNs = []
-
-      for (const [idx, tenantList] of tenants.entries()) {
-        for (const tenant of tenantList) {
-          let namespaces;
-          try {
-            namespaces = await this.$axios.$get('/api/admin/v2/namespaces/' + tenant + '?' + connections[idx].url)
-          }
-          catch (err) {
-            console.error(err)
-          }
-
-          for (const namespace of namespaces) {
-            try {
-              const nsTopics = await this.$axios.$get('/api/admin/v2/namespaces/' + namespace + '/topics?' + connections[idx].url)
-
-              if (nsTopics && nsTopics.length > 0) {
-                topicsByNs.push({ connection: connections[idx].url, names: nsTopics })
-              }
-            }
-            catch (err) {
-              console.error(err)
-            }
-          }
-        }
-      }
+      const clusters = await this.$pulsar.fetchClusters(connections)
+      const topicRefs = await this.$pulsar.fetchTopics(clusters)
 
       this.topics = []
 
-      for (const topics of topicsByNs) {
-        for (const topic of topics.names) {
-          const topicStats = await this.$axios.$get('/api/admin/v2/' + topic.replace(":/","") + '/stats?' + topics.connection)
-          this.topics.push({
-            id: this.topics.length,
-            connection: topics.connection,
-            name: topic.substring(topic.indexOf('://') + 3), 
-            persistent: topic.startsWith('persistent'), 
-            stats: topicStats })
-        }
+      for (const ref of topicRefs) {
+        const topicStats = await this.$axios.$get('/api/admin/v2/' + ref.topic.replace(":/","") + '/stats?' + ref.cluster.serviceUrl)
+        this.topics.push({
+          id: this.topics.length,
+          cluster: ref.cluster,
+          name: ref.topic.substring(ref.topic.indexOf('://') + 3), 
+          persistent: ref.topic.startsWith('persistent'), 
+          stats: topicStats })
       }
 
       this.setTopics(this.topics)

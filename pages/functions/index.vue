@@ -1,7 +1,8 @@
 <template>
   <div class="dataview">
     <el-breadcrumb separator="/" class="breadcrumb">
-      <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/overview' }">Home</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/clusters' }">{{cluster ? cluster.name : 'All clusters'}}</el-breadcrumb-item>
       <el-breadcrumb-item>Functions</el-breadcrumb-item>
     </el-breadcrumb>
     <loading v-if="loading" />
@@ -53,8 +54,8 @@
           <template slot-scope="scope">
             <el-button
               @click.native.prevent="showDetails(scope.row.id)"
-              type="text"
-              size="small">
+              type="primary" plain round
+              size="mini">
               Details
             </el-button>
           </template>
@@ -70,7 +71,7 @@
       </el-alert>
     </div>
     <div class="button-bar">
-      <el-button type="primary" @click="reload()">Reload</el-button>
+      <el-button @click="reload()">Reload</el-button>
     </div>
   </div>
 </template>
@@ -122,8 +123,6 @@ export default {
 
     async reload() {
       this.loading = true
-      let queries = []
-
       let connections = []
 
       if (this.cluster) {
@@ -133,42 +132,23 @@ export default {
         await this.$store.dispatch('connections/fetchConnections')
         connections = this.$store.state.connections.connections
       }
-      
-      connections.forEach(connection => queries.push(this.$axios.$get('/api/admin/v2/tenants?' + connection.url)))
 
-      let tenants = []
-
-      try {
-        tenants = await Promise.all(queries)
-      }
-      catch (err) {
-        console.error(err)
-      }
+      const clusters = await this.$pulsar.fetchClusters(connections)
+      const tenants = await this.$pulsar.fetchTenants(clusters)
+      const namespaces = await this.$pulsar.fetchNamespaces(tenants)
 
       const functionsByNs = []
+      
+      for (const ns of namespaces) {
+        try {
+          const names = await this.$axios.$get('/api/admin/v3/functions/' + ns.namespace + '?' + ns.cluster.serviceUrl)
 
-      for (const [idx, tenantList] of tenants.entries()) {
-        for (const tenant of tenantList) {
-          let namespaces;
-          try {
-            namespaces = await this.$axios.$get('/api/admin/v2/namespaces/' + tenant + '?' + connections[idx].url)
+          if (names && names.length > 0) {
+            functionsByNs.push({ cluster: ns.cluster, namespace: ns.namespace, names })
           }
-          catch (err) {
-            console.error(err)
-          }
-
-          for (const namespace of namespaces) {
-            try {
-              const names = await this.$axios.$get('/api/admin/v3/functions/' + namespace + '?' + connections[idx].url)
-
-              if (names && names.length > 0) {
-                functionsByNs.push({ connection: connections[idx].url, namespace, names })
-              }
-            }
-            catch (err) {
-              console.error(err)
-            }
-          }
+        }
+        catch (err) {
+          console.error(err)
         }
       }
 
@@ -176,11 +156,11 @@ export default {
 
       for (const functions of functionsByNs) {
         for (const fctName of functions.names) {
-          const url = '/api/admin/v3/functions/' + functions.namespace + '/' + fctName + '?' + functions.connection
+          const url = '/api/admin/v3/functions/' + functions.namespace + '/' + fctName + '?' + functions.cluster.serviceUrl
           const fctSInfos = await this.$axios.$get(url)
           this.functions.push({
             id: this.functions.length,
-            connection: functions.connection,
+            cluster: functions.cluster,
             infos: fctSInfos })
         }
       }

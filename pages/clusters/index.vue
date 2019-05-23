@@ -1,7 +1,7 @@
 <template>
   <div class="dataview">
     <el-breadcrumb separator="/" class="breadcrumb">
-      <el-breadcrumb-item :to="{ path: '/' }">Home</el-breadcrumb-item>
+      <el-breadcrumb-item :to="{ path: '/overview' }">Home</el-breadcrumb-item>
       <el-breadcrumb-item>Clusters</el-breadcrumb-item>
     </el-breadcrumb>
     <loading v-if="loading" />
@@ -31,15 +31,21 @@
           width="300">
           <template slot-scope="scope">
             <el-button
+              @click.native.prevent="showBrokers(scope.row)"
+              type="primary" plain round
+              size="mini">
+              Brokers
+            </el-button>
+            <el-button
               @click.native.prevent="showTopics(scope.row)"
-              type="text"
-              size="small">
+              type="primary" plain round
+              size="mini">
               Topics
             </el-button>
             <el-button
               @click.native.prevent="showFunctions(scope.row)"
-              type="text"
-              size="small">
+              type="primary" plain round
+              size="mini">
               Functions
             </el-button>
           </template>
@@ -55,7 +61,7 @@
       </el-alert>
     </div>
     <div class="button-bar">
-      <el-button type="primary" @click="reload()">Reload</el-button>
+      <el-button @click="reload()">Reload</el-button>
     </div>
   </div> 
 </template>
@@ -94,6 +100,11 @@ export default {
       this.$router.push({ path: '/topics' })
     },
 
+    showBrokers(cluster) {
+      this.setCluster(cluster)
+      this.$router.push({ path: '/brokers' })
+    },
+
     showFunctions(cluster) {
       this.setCluster(cluster)
       this.$router.push({ path: '/functions' })
@@ -113,33 +124,7 @@ export default {
       await this.$store.dispatch('connections/fetchConnections')
 
       this.loading = true
-      const availableClusters = []
-
-      let queries = []
-      this.connections.forEach(connection => queries.push(this.$axios.$get('/api/admin/v2/clusters?' + connection.url)))
-
-      let clusterList = []
-
-      try {
-        clusterList = await Promise.all(queries)
-      }
-      catch (err) {
-        console.error(err)
-      }
-
-      for (const [idx, clusters] of clusterList.entries()) {
-        for (const cluster of clusters) {
-          try {
-            const clusterInfos = await this.$axios.$get('/api/admin/v2/clusters/' + cluster + '?' + this.connections[idx].url)
-            availableClusters.push({ name: cluster, serviceUrl: clusterInfos.serviceUrl, brokerServiceUrl: clusterInfos.brokerServiceUrl })
-          }
-          catch (err) {
-            console.error(err)
-          }
-        }
-      }
-
-      this.clusters = availableClusters
+      this.clusters = await this.$pulsar.fetchClusters(this.connections, this.$axios)
       this.loading = false
     }
   },

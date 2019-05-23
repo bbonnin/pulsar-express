@@ -25,7 +25,6 @@
     "element-theme-chalk": "^2.8.2",
     "element-ui": "^2.4.11",
     "nuxt": "^2.4.0",
-    "nuxt-start": "^2.7.1",
     "vue-lodash": "^2.0.2",
     "vue-moment": "^4.0.0"
   },
