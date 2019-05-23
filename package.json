@@ -1,8 +1,12 @@
 {
   "name": "pulsar-express",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Simple Web Interface for Apache Pulsar",
-  "keywords": [ "apache pulsar", "pulsar", "web" ],
+  "keywords": [
+    "apache pulsar",
+    "pulsar",
+    "web"
+  ],
   "author": "Bruno Bonnin",
   "repository": {
     "type": "git",
