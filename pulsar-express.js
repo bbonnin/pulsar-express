@@ -1,6 +1,5 @@
 #!/usr/bin/env node
 
-require('net')
 require('esm')
 
 const consola = require('consola')
