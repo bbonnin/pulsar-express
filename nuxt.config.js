@@ -59,10 +59,10 @@ export default {
   axios: {
     // See https://github.com/nuxt-community/axios-module#options
     debug: false,
-    proxy: true
+    proxy: false
   },
 
-  proxy: {
+  /*proxy: {
     // See https://axios.nuxtjs.org/options, https://github.com/nuxt-community/proxy-module
     '/api': {
       target: 'http://fake', // get the target in router
@@ -75,7 +75,7 @@ export default {
         return route
       }
     }
-  },
+  },*/
 
   serverMiddleware: [
     '~/serverMiddleware/pulsar-api-proxy'
