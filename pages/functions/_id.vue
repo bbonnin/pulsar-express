@@ -188,15 +188,13 @@ export default {
     cellFormatBoolean,
 
     async reload() {
-      const url = '/api/admin/v3/functions/' + this.fullname + '/status?' + this.currentFunction.cluster.serviceUrl
-      const status = await this.$axios.$get(url)
+      const status = await this.$pulsar.fetchFunctionStatus(this.fullname, this.currentFunction.cluster.serviceUrl)
       this.instances = status.instances
       console.log(status)
     },
 
     stopAllInstances() {
-      const url = '/api/admin/v3/functions/' + this.fullname + '/stop?' + this.currentFunction.cluster.serviceUrl
-      this.$axios.$post(url)
+      this.$pulsar.startStopFctInstances('stop', this.fullname, this.currentFunction.cluster.serviceUrl)
         .then (resp => {
           this.$message({
             type: 'success',
@@ -213,8 +211,7 @@ export default {
     },
 
     startAllInstances() {
-      const url = '/api/admin/v3/functions/' + this.fullname + '/start?' + this.currentFunction.cluster.serviceUrl
-      this.$axios.$post(url)
+      this.$pulsar.startStopFctInstances('start', this.fullname, this.currentFunction.cluster.serviceUrl)
         .then (resp => {
           this.$message({
             type: 'success',

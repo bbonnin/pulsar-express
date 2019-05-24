@@ -141,7 +141,7 @@ export default {
       
       for (const ns of namespaces) {
         try {
-          const names = await this.$axios.$get('/api/admin/v3/functions/' + ns.namespace + '?' + ns.cluster.serviceUrl)
+          const names = await this.$pulsar.fetchFunctions(ns.namespace, ns.cluster.serviceUrl)
 
           if (names && names.length > 0) {
             functionsByNs.push({ cluster: ns.cluster, namespace: ns.namespace, names })
@@ -156,8 +156,7 @@ export default {
 
       for (const functions of functionsByNs) {
         for (const fctName of functions.names) {
-          const url = '/api/admin/v3/functions/' + functions.namespace + '/' + fctName + '?' + functions.cluster.serviceUrl
-          const fctSInfos = await this.$axios.$get(url)
+          const fctSInfos = await this.$pulsar.fetchFunction(functions.namespace + '/' + fctName, functions.cluster.serviceUrl)
           this.functions.push({
             id: this.functions.length,
             cluster: functions.cluster,
