@@ -92,10 +92,12 @@ For detailed explanation on how things work, checkout [Nuxt.js docs](https://nux
 
 ## To do
 
+> A lot of things of course :), but the main step is to change the architecture and add a backend instead of making the queries from the browser. This backend could provide api, cache, better management of configuration, ...
+
 * Navigation: add a way to change the cluster in each page
 * More functions for each items (delete, update, ...)
 * Auto refresh
-* ...And a lot of things !!!
+* ...And many things !!!
 
 
 
