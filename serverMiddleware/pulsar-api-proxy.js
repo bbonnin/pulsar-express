@@ -1,26 +1,13 @@
 import express from 'express'
+import request from 'request'
 
 const app = express()
 
-app.get('/*', (req, res) => {
-  // Validate, sanitize and send
-  console.log(req.url) // /fdf/lklklk?htht
-  console.log(req.query['u']) // 
-  console.log(req.params['0'])
-  res.write('Hey!')
-  res.end()
-
-  /*pathRewrite: { '^/api/' : '/' },
-      //pathRewrite: { '^/api/' : function (path, req) { 
-      //  return path.replace('/api', '/')
-      //}},
-      router: function(req) {
-        var route = req.url.substring(req.url.indexOf('?') + 1)
-        return route
-      }*/
+app.all('/*', (req, res) => {
+  request({ method: req.method, url: req.query['u'] + '/' + req.params['0'] }).pipe(res)
 })
 
 export default {
-  path: '/api2',
+  path: '/api',
   handler: app
 }
