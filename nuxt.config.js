@@ -77,6 +77,10 @@ export default {
     }
   },
 
+  serverMiddleware: [
+    '~/serverMiddleware/pulsar-api-proxy'
+  ],
+
   /*
   ** Build configuration
   */

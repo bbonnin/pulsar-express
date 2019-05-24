@@ -124,7 +124,7 @@ export default {
       await this.$store.dispatch('connections/fetchConnections')
 
       this.loading = true
-      this.clusters = await this.$pulsar.fetchClusters(this.connections, this.$axios)
+      this.clusters = await this.$pulsar.fetchClusters(this.connections)
       this.loading = false
     }
   },

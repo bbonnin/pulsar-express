@@ -77,7 +77,8 @@
     </div>
 
     <div class="button-bar">
-      <el-button type="primary" @click="createVisible = true">Create topic</el-button>
+      <!-- TODO: add cluster selection -->
+      <!--el-button type="primary" @click="createVisible = true">Create topic</el-button-->
       <el-button @click="reload()">Reload</el-button>
     </div>
 
@@ -162,7 +163,7 @@ export default {
         if (valid) {
           const fullname = this.newTopic.type + '/' + 
             this.newTopic.tenant + '/' + this.newTopic.namespace + '/' + this.newTopic.name
-          this.$axios.$put('/api/admin/v2/' + fullname + '?' + this.cluster.serviceUrl)
+          this.$pulsar.createTopic(fullname, this.cluster.serviceUrl)
             .then(() => {
               this.$message({
                 type: 'success',
@@ -194,7 +195,7 @@ export default {
           let fullname = topic.persistent ? 'persistent/' : 'non-persistent'
           fullname += topic.name
 
-          this.$axios.$delete('/api/admin/v2/' + fullname + '?' + topic.cluster.serviceUrl)
+          this.$pulsar.deleteTopic(fullname, topic.cluster.serviceUrl)
             .then(() => {
               this.$message({
                 type: 'success',
@@ -234,7 +235,7 @@ export default {
       this.topics = []
 
       for (const ref of topicRefs) {
-        const topicStats = await this.$axios.$get('/api/admin/v2/' + ref.topic.replace(":/","") + '/stats?' + ref.cluster.serviceUrl)
+        const topicStats = await this.$pulsar.fetchTopicStats(ref.topic.replace(":/",""), ref.cluster.serviceUrl)
         this.topics.push({
           id: this.topics.length,
           cluster: ref.cluster,

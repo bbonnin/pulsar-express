@@ -1,5 +1,26 @@
 
 export default $axios => ({
+  startStopFctInstances(action, fullname, serviceUrl) {
+    const url = '/api/admin/v3/functions/' + fullname + '/' + action + '?' + serviceUrl
+    return $axios.$post(url)
+  },
+
+  async fetchFunction(fctName, serviceUrl) {
+    return await $axios.$get('/api/admin/v3/functions/' + fctName + '?' + serviceUrl)
+  },
+
+  async fetchFunctionStatus(fctName, serviceUrl) {
+    return await $axios.$get('/api/admin/v3/functions/' + fctName + '/status?' + serviceUrl)
+  },
+
+  async fetchFunctions(ns, serviceUrl) {
+    return await $axios.$get('/api/admin/v3/functions/' + ns + '?' + serviceUrl)
+  },
+
+  async fetchTopicStats(topic, serviceUrl) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/stats?' + serviceUrl)
+  },
+
   async fetchBrokers(clusters) {
     let brokers = []
 
@@ -68,6 +89,14 @@ export default $axios => ({
     const tenants = await this.fetchTenants(clusters)  
     const namespaces = await this.fetchNamespaces(tenants)
     return await this.fetchTopicsNS(namespaces)
+  },
+
+  deleteTopic(fullname, serviceUrl) {
+    return $axios.$delete('/api/admin/v2/' + fullname + '?' + serviceUrl)
+  },
+
+  createTopic(fullname, serviceUrl) {
+    return $axios.$put('/api/admin/v2/' + fullname + '?' + serviceUrl)
   },
 
   async fetchBrokers(clusters) {

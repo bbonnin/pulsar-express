@@ -214,11 +214,8 @@ export default {
 
     async reload() {
       this.loading = true
-      console.log(this.currentTopic)
       const persist = this.currentTopic.persistent ? "persistent" : "non-persistent"
-      const topicStats = await this.$axios.$get(
-        '/api/admin/v2/' + persist + '/' + this.currentTopic.name + '/stats?' + this.currentTopic.cluster.serviceUrl)
-      this.stats = topicStats
+      this.stats = await this.$pulsar.fetchTopicStats(persist + '/' + this.currentTopic.name, this.currentTopic.cluster.serviceUrl)
       this.loading = false
     }
   },
