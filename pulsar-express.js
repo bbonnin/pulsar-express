@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+require('esm')
+
 const consola = require('consola')
 
 const port = process.env.PORT || 3000
