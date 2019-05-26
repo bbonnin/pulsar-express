@@ -1,5 +1,5 @@
-import express from 'express'
-import fs from 'fs'
+const express = require('express')
+const fs = require('fs')
 
 // Env vars:
 // - PE_CONFIG_FILE : reference to a json file with multiple connections
@@ -22,11 +22,13 @@ if (process.env.PE_CONNECTION_URL) {
 
 const app = express()
 
+console.log(connections)
+
 app.get('/connections', (req, res) => {
   res.json(connections)
 })
 
-export default {
+module.exports = {
   path: '/api',
   handler: app
 }
