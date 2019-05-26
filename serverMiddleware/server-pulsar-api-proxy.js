@@ -1,5 +1,5 @@
-import express from 'express'
-import request from 'request'
+const express = require('express')
+const request = require('request')
 
 const app = express()
 
@@ -20,7 +20,7 @@ app.all('/*', (req, res) => {
     .pipe(res)
 })
 
-export default {
+module.exports = {
   path: '/api',
   handler: app
 }
