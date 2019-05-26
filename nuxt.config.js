@@ -78,8 +78,8 @@ export default {
   },*/
 
   serverMiddleware: [
-    '~/serverMiddleware/server-internal-api',
-    '~/serverMiddleware/server-pulsar-api-proxy'
+    __dirname + '/serverMiddleware/server-internal-api',
+    __dirname + '/serverMiddleware/server-pulsar-api-proxy'
   ],
 
   /*
