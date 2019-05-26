@@ -4,8 +4,7 @@
       <div v-if="connections && connections.length > 0">
         <el-table
           :data="connections"
-          style="width: 100%"
-          :default-sort = "{prop: 'name', order: 'descending'}">
+          style="width: 100%">
           <el-table-column
             fixed
             prop="name"
@@ -22,6 +21,7 @@
             width="120">
             <template slot-scope="scope">
               <el-button
+                v-if="!scope.row.serverConfig"
                 @click.native.prevent="deleteConnection(scope.$index)"
                 type="danger" plain
                 size="mini">
@@ -44,7 +44,7 @@
         <el-form-item label="Pulsar API url" prop="url">
           <el-input v-model="connection.url"></el-input>
         </el-form-item>
-        <el-form-item label="With security">
+        <!--el-form-item label="With security">
           <el-switch v-model="withSecurity"></el-switch>
         </el-form-item>
         <div v-if="withSecurity">
@@ -54,7 +54,7 @@
           <el-form-item label="Password" prop="pwd">
             <el-input type="password" v-model="connection.pwd"></el-input>
           </el-form-item>
-        </div>
+        </div-->
         <el-form-item>
           <el-button type="primary" @click="createConnection('connectionForm')">Create</el-button>
           <el-button @click="addConnectionVisible = false">Cancel</el-button>
@@ -79,9 +79,7 @@ export default {
       withSecurity: false,
       connection: {
         name: 'My local connection',
-        url: 'http://localhost:8080',
-        user: '',
-        pwd: ''
+        url: 'http://localhost:8080'
       },
       connectionRules: {
         name: [
@@ -105,7 +103,7 @@ export default {
     createConnection: function (formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
-          this.addConnection(this.connection)
+          this.addConnection(this._.clone(this.connection))
           this.addConnectionVisible = false
         }
         return valid
