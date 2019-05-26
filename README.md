@@ -35,6 +35,27 @@ $ PORT=8000 pulsar-express
 
 ```
 
+If you want to configure connections (to be available to all users), you can:
+* Create a json file with the connections:
+```json
+[
+  { "name": "test cluster", "url": "http://test-cluster-host:8080" },
+  { "name": "integration cluster", "url": "http://int-cluster-host:8080" }
+]
+```
+* and set the env variable `PE_CONFIG_FILE`
+```bash
+export PE_CONFIG_FILE=/path/to/my/config.json
+```
+* Or you can also set a connection URL
+```bash
+export PE_CONNECTION_URL=http://pulsar-host:8080
+
+# Without a name, the url will be used (hostname:port),
+# Or you can set a name
+export PE_CONNECTION_NAME=my-pulsar
+```
+
 From there, you can connect with your browser to the url above !
 
 ![Pulsar express home](docs/home.png)
