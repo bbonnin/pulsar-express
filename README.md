@@ -9,6 +9,9 @@
 
 There are several ways to use `pulsar-express`:
 * By cloning the projet and running it locally (see `Development` section)
+* By running a docker image: `docker run -it -p 3000:3000 bbonnin/pulsar-express`
+  * You can set a connection url in the command: `docker run -it -p 3000:3000 -e PE_CONNECTION_URL=http://host.docker.internal:8080 bbonnin/pulsar-express`
+  * Important: the calls to the Pulsar API are done on server side (i.e. from the container), so your Pulsar must be reachable from the container (do not use localhost :)). A solution: you can add `--network=host` to the command line (but, it's only working on Linux...)
 * By installing it using `npm`
 ```bash
 # Install it globally
@@ -109,6 +112,11 @@ $ npm start
 
 For detailed explanation on how things work, checkout [Nuxt.js docs](https://nuxtjs.org).
 
+For Docker:
+* Build: `npm run docker-build`
+* Test locally: `npm run docker-run`
+* Tag: `docker tag pulsar-express USER/pulsar-express:VERSION`
+* Publish: `docker push USER/pulsar-express:VERSION`
 
 
 ## To do
