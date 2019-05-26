@@ -122,7 +122,9 @@ export default $axios => ({
     let clustersByConnection = []
 
     try {
-      clustersByConnection = await Promise.all(queries)
+      //clustersByConnection = await Promise.all(queries)
+      clustersByConnection = await Promise.all(
+        queries.map(p => p.catch((err) => { console.error(err); return [] })))
     }
     catch (err) {
       console.error(err)

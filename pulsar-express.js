@@ -2,6 +2,8 @@
 
 require('esm')
 
+require('dotenv').config()
+
 const consola = require('consola')
 
 const port = process.env.PORT || 3000
