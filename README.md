@@ -1,3 +1,5 @@
+[![GitHub license](https://img.shields.io/badge/license-apache-blue.svg)](https://github.com/bbonnin/pulsar-express/blob/master/LICENSE)
+
 # pulsar-express
 
 > Simple Web Interface for Apache Pulsar
