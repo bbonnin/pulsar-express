@@ -59,8 +59,11 @@ export PE_CONFIG_FILE=/path/to/my/config.json
 export PE_CONNECTION_URL=http://pulsar-host:8080
 
 # Without a name, the url will be used (hostname:port),
-# Or you can set a name
+# Or you can set a name:
 export PE_CONNECTION_NAME=my-pulsar
+
+# A token if needed:
+export PE_CONNECTION_TOKEN=<YOUR_TOKEN>
 ```
 
 From there, you can connect with your browser to the url above !
@@ -119,8 +122,23 @@ pulsar tokens create --secret-key file:///path/to/my-secret.key \
 authenticationEnabled=true
 authorizationEnabled=true
 authenticationProviders=org.apache.pulsar.broker.authentication.AuthenticationProviderToken
-
+superUserRoles=pulsar-express
 tokenSecretKey=file:///path/to/my-secret.key
+```
+
+* Configure your workers (`conf/functions_worker.yml`)
+```bash
+clientAuthenticationPlugin: "org.apache.pulsar.client.impl.auth.AuthenticationToken"
+clientAuthenticationParameters: "token:<YOUR_TOKEN>"
+
+authenticationEnabled: true
+authorizationEnabled: true
+authenticationProviders:
+  - org.apache.pulsar.broker.authentication.AuthenticationProviderToken
+properties:
+  tokenSecretKey: "file:///path/to/my-secret.key"
+superUserRoles:
+  - pulsar-express
 ```
 
 * Test a call to the API (you should get a 401 response without the token):

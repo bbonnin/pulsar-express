@@ -188,13 +188,13 @@ export default {
     cellFormatBoolean,
 
     async reload() {
-      const status = await this.$pulsar.fetchFunctionStatus(this.fullname, this.currentFunction.cluster.serviceUrl)
+      const status = await this.$pulsar.fetchFunctionStatus(this.fullname, this.currentFunction.cluster)
       this.instances = status.instances
       console.log(status)
     },
 
     stopAllInstances() {
-      this.$pulsar.startStopFctInstances('stop', this.fullname, this.currentFunction.cluster.serviceUrl)
+      this.$pulsar.startStopFctInstances('stop', this.fullname, this.currentFunction.cluster)
         .then (resp => {
           this.$message({
             type: 'success',
@@ -211,7 +211,7 @@ export default {
     },
 
     startAllInstances() {
-      this.$pulsar.startStopFctInstances('start', this.fullname, this.currentFunction.cluster.serviceUrl)
+      this.$pulsar.startStopFctInstances('start', this.fullname, this.currentFunction.cluster)
         .then (resp => {
           this.$message({
             type: 'success',

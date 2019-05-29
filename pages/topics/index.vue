@@ -163,7 +163,7 @@ export default {
         if (valid) {
           const fullname = this.newTopic.type + '/' + 
             this.newTopic.tenant + '/' + this.newTopic.namespace + '/' + this.newTopic.name
-          this.$pulsar.createTopic(fullname, this.cluster.serviceUrl)
+          this.$pulsar.createTopic(fullname, this.cluster)
             .then(() => {
               this.$message({
                 type: 'success',
@@ -195,7 +195,7 @@ export default {
           let fullname = topic.persistent ? 'persistent/' : 'non-persistent'
           fullname += topic.name
 
-          this.$pulsar.deleteTopic(fullname, topic.cluster.serviceUrl)
+          this.$pulsar.deleteTopic(fullname, topic.cluster)
             .then(() => {
               this.$message({
                 type: 'success',
@@ -222,7 +222,7 @@ export default {
       let connections = []
 
       if (this.cluster) {
-        connections.push({ url: this.cluster.serviceUrl })
+        connections.push(this.cluster.connection)
       }
       else {
         await this.$store.dispatch('connections/fetchConnections')
@@ -235,7 +235,7 @@ export default {
       this.topics = []
 
       for (const ref of topicRefs) {
-        const topicStats = await this.$pulsar.fetchTopicStats(ref.topic.replace(":/",""), ref.cluster.serviceUrl)
+        const topicStats = await this.$pulsar.fetchTopicStats(ref.topic.replace(":/",""), ref.cluster)
         this.topics.push({
           id: this.topics.length,
           cluster: ref.cluster,

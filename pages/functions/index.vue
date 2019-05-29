@@ -126,7 +126,7 @@ export default {
       let connections = []
 
       if (this.cluster) {
-        connections.push({ url: this.cluster.serviceUrl })
+        connections.push(this.cluster.connection)
       }
       else {
         await this.$store.dispatch('connections/fetchConnections')
@@ -141,7 +141,7 @@ export default {
       
       for (const ns of namespaces) {
         try {
-          const names = await this.$pulsar.fetchFunctions(ns.namespace, ns.cluster.serviceUrl)
+          const names = await this.$pulsar.fetchFunctions(ns.namespace, ns.cluster)
 
           if (names && names.length > 0) {
             functionsByNs.push({ cluster: ns.cluster, namespace: ns.namespace, names })
@@ -149,6 +149,10 @@ export default {
         }
         catch (err) {
           console.error(err)
+          this.$message({
+            type: 'error',
+            message: 'Fetch Functions ' + err
+          })
         }
       }
 
@@ -156,7 +160,7 @@ export default {
 
       for (const functions of functionsByNs) {
         for (const fctName of functions.names) {
-          const fctSInfos = await this.$pulsar.fetchFunction(functions.namespace + '/' + fctName, functions.cluster.serviceUrl)
+          const fctSInfos = await this.$pulsar.fetchFunction(functions.namespace + '/' + fctName, functions.cluster)
           this.functions.push({
             id: this.functions.length,
             cluster: functions.cluster,

@@ -215,7 +215,7 @@ export default {
     async reload() {
       this.loading = true
       const persist = this.currentTopic.persistent ? "persistent" : "non-persistent"
-      this.stats = await this.$pulsar.fetchTopicStats(persist + '/' + this.currentTopic.name, this.currentTopic.cluster.serviceUrl)
+      this.stats = await this.$pulsar.fetchTopicStats(persist + '/' + this.currentTopic.name, this.currentTopic.cluster)
       this.loading = false
     }
   },
