@@ -1,4 +1,6 @@
 [![GitHub license](https://img.shields.io/badge/license-apache2-blue.svg)](https://github.com/bbonnin/pulsar-express/blob/master/LICENSE)
+[![GitHub version](https://img.shields.io/badge/dynamic/json.svg?color=green&label=version&query=version&url=https://raw.githubusercontent.com/bbonnin/pulsar-express/master/package.json)](https://github.com/bbonnin/pulsar-express/releases)
+
 
 # pulsar-express
 
