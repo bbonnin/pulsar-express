@@ -67,7 +67,7 @@ export default {
       let connections = []
 
       if (this.cluster) {
-        connections.push({ url: this.cluster.serviceUrl })
+        connections.push(this.cluster.connection)
       }
       else {
         await this.$store.dispatch('connections/fetchConnections')

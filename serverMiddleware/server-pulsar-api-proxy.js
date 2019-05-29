@@ -11,7 +11,7 @@ app.all('/*', (req, res) => {
   if (req.query['u']) {
     // Remote URL provided by the client
     url = req.query['u'] + '/' + req.params['0']
-    token = eq.query['t']
+    token = req.query['t']
   }
   else if (req.query['n']) {
     // The client has only provided a name, so get the url from the configuration
