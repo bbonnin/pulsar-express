@@ -1,4 +1,4 @@
-[![GitHub license](https://img.shields.io/badge/license-apache-blue.svg)](https://github.com/bbonnin/pulsar-express/blob/master/LICENSE)
+[![GitHub license](https://img.shields.io/badge/license-apache2-blue.svg)](https://github.com/bbonnin/pulsar-express/blob/master/LICENSE)
 
 # pulsar-express
 
