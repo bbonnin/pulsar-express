@@ -47,7 +47,7 @@ If you want to configure connections (to be available to all users), you can:
 ```json
 [
   { "name": "test cluster", "url": "http://test-cluster-host:8080" },
-  { "name": "integration cluster", "url": "http://int-cluster-host:8080" }
+  { "name": "integration cluster", "url": "http://int-cluster-host:8080", "token": "<YOUR_TOKEN>" }
 ]
 ```
 * and set the env variable `PE_CONFIG_FILE`
@@ -68,12 +68,17 @@ From there, you can connect with your browser to the url above !
 ![Pulsar express home](docs/home.png)
 
 
+## Quick start
+
+> If you haven't defined a connection, the first step is to go the `Connections` page and add a new connection. These connections are stored on client side (localstorage of your browser)
+
+![Pulsar express connections](docs/connections.png)
+
 ### Overview
 
-You can see some basic informations.
+In this page, you can see some basic informations about your clusters.
 
 ![Pulsar express overview](docs/overview.png)
-
 
 ### Clusters
 
@@ -92,11 +97,39 @@ You can see some basic informations.
 ![Pulsar express function](docs/function.png)
 
 
-## How to
+## Security
 
-* First step, you have to define a connection (for sending requests to the API)
-  * These connections are stored on client side (localstorage of your browser)
-* Then, you can access the clusters, the topics and the functions
+To enable security in Pulsar, please read [https://pulsar.apache.org/docs/en/security-overview/](the docs).
+
+For example, with token authentication with a secret key (more details, [https://pulsar.apache.org/docs/en/security-token-admin/](here)), 
+
+* Create a secret key:
+```bash
+pulsar tokens create-secret-key --output my-secret.key --base64
+```
+
+* Create a token for pulsar-express
+```bash
+pulsar tokens create --secret-key file:///path/to/my-secret.key \
+            --subject pulsar-express
+```
+
+* Configure your broker (`conf/broker.conf` or `conf/standalone.conf`)
+```bash
+authenticationEnabled=true
+authorizationEnabled=true
+authenticationProviders=org.apache.pulsar.broker.authentication.AuthenticationProviderToken
+
+tokenSecretKey=file:///path/to/my-secret.key
+```
+
+* Test a call to the API (you should get a 401 response without the token):
+```bash
+curl localhost:8080/admin/v2/clusters  -H "Authorization: Bearer <YOUR_TOKEN>"
+
+["standalone"]
+```
+
 
 ## Development
 
