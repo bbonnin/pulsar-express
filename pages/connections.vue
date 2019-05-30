@@ -44,17 +44,9 @@
         <el-form-item label="Pulsar API url" prop="url">
           <el-input v-model="connection.url"></el-input>
         </el-form-item>
-        <!--el-form-item label="With security">
-          <el-switch v-model="withSecurity"></el-switch>
+        <el-form-item label="Token" prop="token">
+          <el-input v-model="connection.token"></el-input>
         </el-form-item>
-        <div v-if="withSecurity">
-          <el-form-item label="User name" prop="user">
-            <el-input v-model="connection.user"></el-input>
-          </el-form-item>
-          <el-form-item label="Password" prop="pwd">
-            <el-input type="password" v-model="connection.pwd"></el-input>
-          </el-form-item>
-        </div-->
         <el-form-item>
           <el-button type="primary" @click="createConnection('connectionForm')">Create</el-button>
           <el-button @click="addConnectionVisible = false">Cancel</el-button>
@@ -79,7 +71,8 @@ export default {
       withSecurity: false,
       connection: {
         name: 'My local connection',
-        url: 'http://localhost:8080'
+        url: 'http://localhost:8080',
+        token: ''
       },
       connectionRules: {
         name: [
@@ -103,6 +96,7 @@ export default {
     createConnection: function (formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
+          this.connection.token = this.connection.token.trim()
           this.addConnection(this._.clone(this.connection))
           this.addConnectionVisible = false
         }
