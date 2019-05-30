@@ -59,7 +59,7 @@ export default {
   axios: {
     // See https://github.com/nuxt-community/axios-module#options
     debug: false,
-    proxy: false
+    proxy: true
   },
 
   /*proxy: {
