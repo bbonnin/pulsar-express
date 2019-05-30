@@ -2,6 +2,11 @@
 
 (Almost) full release notes.
 
+## Version 0.3.1
+
+* Fix: Fix: axios queries not using ovrriden port/host
+
+
 ## Version 0.3.0
 
 * Features:
@@ -10,7 +15,7 @@
     * Update of requests on client-side
     * UI for connection creation (input for token)
   * Docker file
-  
+
 
 ## Version 0.2.2
 
