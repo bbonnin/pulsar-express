@@ -149,10 +149,12 @@ export default {
         }
         catch (err) {
           console.error(err)
+          /*
           this.$message({
             type: 'error',
             message: 'Fetch Functions ' + err
           })
+          */
         }
       }
 
