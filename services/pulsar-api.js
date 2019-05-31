@@ -50,6 +50,24 @@ export default $axios => ({
     return brokers
   },
 
+  async fetchTenantsConfig(clusters) {
+    const tenants = await this.fetchTenants(clusters)
+
+    let tenantConfigs = []
+
+    for (const tenant of tenants) {
+      try {
+        const cfg = await $axios.$get('/api/admin/v2/tenants/' + tenant.tenant + '?' + getServiceParams(tenant.cluster.connection))
+        tenantConfigs = tenantConfigs.concat({cluster: tenant.cluster, name: tenant.tenant, config: cfg})
+      }
+      catch (err) {
+        console.error(err)
+      }
+    }
+
+    return tenantConfigs
+  },
+
   async fetchTenants(clusters) {
     let tenants = []
 
