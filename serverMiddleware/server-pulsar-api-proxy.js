@@ -3,6 +3,7 @@ const request = require('request')
 const connections = require('./connections')
 
 const app = express()
+app.use(express.json())
 
 app.all('/*', (req, res) => {
   let url = null
@@ -33,6 +34,15 @@ app.all('/*', (req, res) => {
       reqOptions.headers = {
         'Authorization': 'Bearer ' + token
       }
+    }
+
+    if ((req.method == 'POST' || req.method == 'PUT')  && req.body && Object.keys(req.body).length > 0) {
+      reqOptions.body = JSON.stringify(req.body)
+
+      if (!reqOptions.headers) {
+        reqOptions.headers = {}
+      }
+      reqOptions.headers['Content-Type'] = 'application/json;charset=UTF-8'
     }
 
     request(reqOptions)
