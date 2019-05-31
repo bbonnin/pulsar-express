@@ -28,22 +28,34 @@
         <el-table-column
           fixed="right"
           label="Actions"
-          width="300">
+          width="460">
           <template slot-scope="scope">
             <el-button
-              @click.native.prevent="showBrokers(scope.row)"
+              @click.native.prevent="showItems(scope.row, '/brokers')"
               type="primary" plain round
               size="mini">
               Brokers
             </el-button>
             <el-button
-              @click.native.prevent="showTopics(scope.row)"
+              @click.native.prevent="showItems(scope.row, '/tenants')"
+              type="primary" plain round
+              size="mini">
+              Tenants
+            </el-button>
+            <el-button
+              @click.native.prevent="showItems(scope.row, '/namespaces')"
+              type="primary" plain round
+              size="mini">
+              Namespaces
+            </el-button>
+            <el-button
+              @click.native.prevent="showItems(scope.row, '/topics')"
               type="primary" plain round
               size="mini">
               Topics
             </el-button>
             <el-button
-              @click.native.prevent="showFunctions(scope.row)"
+              @click.native.prevent="showItems(scope.row, '/functions')"
               type="primary" plain round
               size="mini">
               Functions
@@ -95,19 +107,9 @@ export default {
   methods: {
     ...mapActions('context', ['setCluster']),
 
-    showTopics(cluster) {
+    showItems(cluster, path) {
       this.setCluster(cluster)
-      this.$router.push({ path: '/topics' })
-    },
-
-    showBrokers(cluster) {
-      this.setCluster(cluster)
-      this.$router.push({ path: '/brokers' })
-    },
-
-    showFunctions(cluster) {
-      this.setCluster(cluster)
-      this.$router.push({ path: '/functions' })
+      this.$router.push({ path })
     },
 
     deleteCluster(idx) {
@@ -138,5 +140,7 @@ export default {
 </script>
 
 <style scoped>
-
+.el-button+.el-button {
+  margin-left: 0px;
+}
 </style>

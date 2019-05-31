@@ -84,6 +84,15 @@ export default $axios => ({
     return tenants
   },
 
+  deleteTenant(tenantName, cluster) {
+    return $axios.$delete('/api/admin/v2/tenants/' + tenantName + '?' + getServiceParams(cluster.connection))
+  },
+
+  createTenant(tenantName, cluster) {
+    return $axios.$put('/api/admin/v2/tenants/' + tenantName + '?' + getServiceParams(cluster.connection), 
+      { adminRoles: [], allowedClusters: [ cluster.name ] })
+  },
+
   async fetchNamespaces(tenants) {
     let namespaces = []
 

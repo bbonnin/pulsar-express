@@ -12,7 +12,7 @@
         style="width: 100%">
         <el-table-column
           prop="name"
-          label="Tenant name">
+          label="Name">
         </el-table-column>
         <el-table-column
           prop="config.adminRoles"
@@ -24,6 +24,19 @@
           label="Allowed clusters"
           :formatter="cellFormatJoin">
         </el-table-column>
+        <el-table-column
+          fixed="right"
+          label="Actions"
+          width="200">
+          <template slot-scope="scope">
+            <el-button
+              @click.native.prevent="deleteTenant(scope.row)"
+              type="danger" plain round
+              size="mini">
+              Delete
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
     <div v-else>
@@ -34,9 +47,33 @@
         show-icon>
       </el-alert>
     </div>
+    
     <div class="button-bar">
+      <el-button type="primary" @click="createVisible = true">Create topic</el-button>
       <el-button @click="reload()">Reload</el-button>
     </div>
+
+    <el-dialog title="Create a tenant" :visible.sync="createVisible">
+      <el-form ref="createForm" :model="newTenant" :rules="tenantRules" label-width="200px">
+        <el-form-item label="Cluster" prop="cluster">
+          <el-select v-model="newTenant.cluster" placeholder="Cluster">
+          <el-option
+            v-for="(item, idx) in clusters"
+            :key="idx"
+            :label="item.name"
+            :value="item">
+          </el-option>
+        </el-select>
+        </el-form-item>
+        <el-form-item label="Name" prop="name">
+          <el-input v-model="newTenant.name"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="createTenant('createForm')">Create</el-button>
+          <el-button @click="createVisible = false">Cancel</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -56,7 +93,21 @@ export default {
   data() {
     return {
       tenants: [],
-      loading: false
+      clusters: [],
+      loading: false,
+      createVisible: false,
+      newTenant: {
+        name: '',
+        cluster: null
+      },
+      tenantRules: {
+        cluster: [
+          { required: true, message: 'Please select a cluster', trigger: 'change' }
+        ],
+        name: [
+          { required: true, message: 'Please set a tenant name', trigger: 'blur' }
+        ]
+      }
     }
   },
 
@@ -79,14 +130,62 @@ export default {
         connections = this.$store.state.connections.connections
       }
 
-      const clusters = await this.$pulsar.fetchClusters(connections)
-      this.tenants = await this.$pulsar.fetchTenantsConfig(clusters)
+      this.clusters = await this.$pulsar.fetchClusters(connections)
+      this.tenants = await this.$pulsar.fetchTenantsConfig(this.clusters)
 
       this.loading = false
     },
 
     cellFormatJoin(row, column, cellValue, index) {
       return cellValue.join(', ')
+    },
+
+    deleteTenant(tenant) {
+      this.$confirm('This will permanently delete the tenant (and all namespaces and topics under it). Continue?', 'Warning', {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        })
+        .then(() => {
+          this.$pulsar.deleteTenant(tenant.name, tenant.cluster)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Delete completed'
+              })
+              this.reload()
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Delete error: ' + err
+              })
+            })
+        })
+    },
+
+    createTenant: function (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$pulsar.createTenant(this.newTenant.name, this.newTenant.cluster)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Creation completed'
+              })
+              this.reload()
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Creation error: ' + err
+              })
+            })
+          this.createVisible = false
+          this.newTeant = { name: '', cluster: null }
+        }
+        return valid
+      })
     }
   },
 
