@@ -33,7 +33,7 @@ body {
 }
 
 .button-bar {
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .breadcrumb {
