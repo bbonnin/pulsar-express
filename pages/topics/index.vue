@@ -1,10 +1,6 @@
 <template>
   <div class="dataview">
-    <el-breadcrumb separator="/" class="breadcrumb">
-      <el-breadcrumb-item :to="{ path: '/overview' }">Home</el-breadcrumb-item>
-      <el-breadcrumb-item :to="{ path: '/clusters' }">{{cluster ? cluster.name : 'All clusters'}}</el-breadcrumb-item>
-      <el-breadcrumb-item>Topics</el-breadcrumb-item>
-    </el-breadcrumb>
+    <breadcrumb :items="[ { path: '/clusters', label: cluster ? 'Cluster ' + cluster.name : 'All clusters' }, { label: 'Topics' } ]" />
     <loading v-if="loading" />
     <div v-else-if="topics.length > 0">
       <el-table
@@ -111,6 +107,7 @@
 <script>
 import { cellFormatFloat } from '@/services/utils'
 import loading from '@/components/loading'
+import breadcrumb from '@/components/breadcrumb'
 import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -119,7 +116,7 @@ export default {
   layout: 'dataview',
 
   components: {
-    loading
+    loading, breadcrumb
   },
 
   data() {

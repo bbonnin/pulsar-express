@@ -1,9 +1,6 @@
 <template>
   <div class="dataview">
-    <el-breadcrumb separator="/" class="breadcrumb">
-      <el-breadcrumb-item :to="{ path: '/overview' }">Home</el-breadcrumb-item>
-      <el-breadcrumb-item>Clusters</el-breadcrumb-item>
-    </el-breadcrumb>
+    <breadcrumb :items="[ { label: 'Clusters' } ]" />
     <loading v-if="loading" />
     <div v-else-if="clusters.length > 0">
       <el-table
@@ -80,6 +77,7 @@
 
 <script>
 import loading from '@/components/loading'
+import breadcrumb from '@/components/breadcrumb'
 import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -88,7 +86,7 @@ export default {
   layout: 'dataview',
 
   components: {
-    loading
+    loading, breadcrumb
   },
 
   data() {

@@ -188,3 +188,8 @@ For Docker:
 ## Known issues
 
 * When creating a topic, the API response is always 405 Method Not Allowed :(
+
+
+## Misc
+
+Icons: https://icones8.fr/

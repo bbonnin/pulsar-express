@@ -1,7 +1,8 @@
 <template>
   <div>
     <nav-bar />
-    <div class="dataview-container">
+    <location-bar />
+    <div class="dataview-with-location-bar-container">
       <el-card shadow="never">
         <nuxt />
       </el-card> 
@@ -11,9 +12,11 @@
 
 <script>
 import NavBar from '@/components/navbar'
+import LocationBar from '@/components/location-bar'
+
 
 export default {
-  components: { NavBar },
+  components: { NavBar, LocationBar },
 }
 </script>
 
@@ -22,14 +25,15 @@ body {
   background: #f8f9fa;
 }
 
-.dataview-container {
+.dataview-with-location-bar-container {
+  /*margin-top: 8rem;*/
   padding: 20px;
   width: 80%;
-  margin: 4rem auto;
+  margin: 8rem auto;
 }
 
 .button-bar {
-  margin-top: 20px;
+  margin-top: 10px;
 }
 
 .breadcrumb {
