@@ -1,12 +1,8 @@
 <template>
   <div class="dataview" v-loading="loading">
     <div v-if="currentTopic" v-loading="loading">
-      <el-breadcrumb separator="/" class="breadcrumb">
-        <el-breadcrumb-item :to="{ path: '/overview' }">Home</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: '/clusters' }">{{this.currentTopic.cluster.name}}</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: '/topics' }">Topics</el-breadcrumb-item>
-        <el-breadcrumb-item>{{ fullname }}</el-breadcrumb-item>
-      </el-breadcrumb>
+      
+      <breadcrumb :items="breadcrumbItems" />
       
       <h3>Stats</h3>
       <el-table
@@ -153,6 +149,7 @@
 <script>
 import { cellFormatFloat, cellFormatDateSince } from '@/services/utils'
 import loading from '@/components/loading'
+import breadcrumb from '@/components/breadcrumb'
 import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -161,7 +158,7 @@ export default {
   layout: 'dataview',
 
   components: {
-    loading
+    loading, breadcrumb
   },
 
   data() {
@@ -173,6 +170,14 @@ export default {
 
   computed: {
     ...mapState('context', ['topic', 'topics']),
+
+    breadcrumbItems() {
+      return [
+        { path: '/clusters', label: 'Cluster ' + this.currentTopic.cluster.name },
+        { path: '/topics', label: 'Topics' },
+        { label: this.fullname }
+      ]
+    },
 
     currentTopic() {
       if (this.topics && this.topics.length > this.topic) {

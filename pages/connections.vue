@@ -1,6 +1,7 @@
 <template>
   <div>
     <div class="dataview">
+      <breadcrumb :items="[ { label: 'Connections' } ]" />
       <div v-if="connections && connections.length > 0">
         <el-table
           :data="connections"
@@ -58,12 +59,17 @@
 </template>
 
 <script>
+import breadcrumb from '@/components/breadcrumb'
 import { mapState, mapActions } from 'vuex'
 
 export default {
   name: 'connections',
 
   layout: 'dataview',
+
+  components: {
+    breadcrumb
+  },
 
   data() {
     return {

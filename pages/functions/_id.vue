@@ -1,13 +1,8 @@
 <template>
   <div class="dataview">
-    <div v-if="currentFunction" v-loading="loading">
-      <el-breadcrumb separator="/" class="breadcrumb">
-        <el-breadcrumb-item :to="{ path: '/overview' }">Home</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: '/clusters' }">{{currentFunction.cluster.name}}</el-breadcrumb-item>
-        <el-breadcrumb-item :to="{ path: '/functions' }">Functions</el-breadcrumb-item>
-        <el-breadcrumb-item>{{ fullname }}</el-breadcrumb-item>
-      </el-breadcrumb>
-      <!--loading v-if="loading" /-->
+    <div v-if="currentFunction">
+      
+      <breadcrumb :items="breadcrumbItems" />
       
       <h3>Exec</h3>
       <el-table
@@ -136,7 +131,7 @@
 
 <script>
 import { cellFormatFloat, cellFormatSimpleTopicName, getSimpleTopicName, cellFormatBoolean } from '@/services/utils'
-import loading from '@/components/loading'
+import breadcrumb from '@/components/breadcrumb'
 import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -145,18 +140,25 @@ export default {
   layout: 'dataview',
 
   components: {
-    loading
+    breadcrumb
   },
 
   data() {
     return {
-      loading: false,
       instances: []
     }
   },
 
   computed: {
     ...mapState('context', ['function', 'functions']),
+
+    breadcrumbItems() {
+      return [
+        { path: '/clusters', label: 'Cluster ' + this.currentFunction.cluster.name },
+        { path: '/functions', label: 'Functions' },
+        { label: this.fullname }
+      ]
+    },
 
     currentFunction() {
       if (this.functions && this.functions.length > this.function) {
