@@ -8,6 +8,7 @@ app.use(express.json())
 app.all('/*', (req, res) => {
   let url = null
   let token = null
+  let noConnectionMsg = null
 
   if (req.query['u']) {
     // Remote URL provided by the client
@@ -19,13 +20,25 @@ app.all('/*', (req, res) => {
     const foundConnection = connections.filter(conn => conn.name == req.query['n'])
     
     if (foundConnection.length > 0) {
-      url = foundConnection[0].url + '/' + req.params['0']
+      if (req.query['e'] == 'fct') {
+        url = foundConnection[0].fctWorkerUrl + '/' + req.params['0']
+      }
+      else {
+        url = foundConnection[0].url + '/' + req.params['0']
+      }
+
       token = foundConnection[0].token
     }
+    else {
+      noConnectionMsg = 'no connection named "' + req.query['n'] + '"'
+    }
+  }
+  else {
+    noConnectionMsg = 'missing query parameter'
   }
 
   if (!url) {
-    res.status(400).send('Unknown connection')
+    res.status(400).send('Unable to connect. Reason: ' + noConnectionMsg)
   }
   else {
     const reqOptions = { method: req.method, url }

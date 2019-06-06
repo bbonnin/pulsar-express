@@ -110,16 +110,6 @@ export default {
       this.$router.push({ path })
     },
 
-    deleteCluster(idx) {
-      this.clusters.splice(idx, 1)
-      this.updateStorage()
-    },
-
-    addCluster(name, url) {
-      this.clusters.push({ name, url })
-      this.updateStorage()
-    },
-
     async reload() {
       await this.$store.dispatch('connections/fetchConnections')
 

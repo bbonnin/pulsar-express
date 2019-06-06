@@ -1,3 +1,6 @@
 [
-  { "name": "local standalone", "url": "http://localhost:8080", "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwdWxzYXItZXhwcmVzcyJ9.rTtZp65tYUHjekM9Kna5afQn3K9je0fMLyoEkXBi2_A" }
+  { "name": "local standalone", "url": "http://localhost:8080",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwdWxzYXItZXhwcmVzcyJ9.rTtZp65tYUHjekM9Kna5afQn3K9je0fMLyoEkXBi2_A" },
+  { "name": "local standalone (fct worker)", "url": "http://localhost:8080", "fctWorkerUrl": "http://localhost:6750",
+    "token": "eyJhbGciOiJIUzI1NiJ9.eyJzdWIiOiJwdWxzYXItZXhwcmVzcyJ9.rTtZp65tYUHjekM9Kna5afQn3K9je0fMLyoEkXBi2_A" }
 ]
