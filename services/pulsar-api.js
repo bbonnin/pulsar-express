@@ -1,8 +1,13 @@
-function getServiceParams(connection) {
-  let params = 'n=' + connection.name
+function getServiceParams(connection, isFunctionApi) {
+  let params = 'n=' + connection.name + (isFunctionApi ? '&e=fct' : '')
 
   if (!connection.serverConfig) {
-    params = 'u=' + connection.url
+    if (isFunctionApi && connection.fctWorkerUrl) {
+      params = 'u=' + connection.fctWorkerUrl
+    }
+    else {
+      params = 'u=' + connection.url
+    }
 
     if (connection.token) {
       params += '&t=' + connection.token
@@ -14,20 +19,20 @@ function getServiceParams(connection) {
 
 export default $axios => ({
   startStopFctInstances(action, fullname, cluster) {
-    const url = '/api/admin/v3/functions/' + fullname + '/' + action + '?' + getServiceParams(cluster.connection)
+    const url = '/api/admin/v3/functions/' + fullname + '/' + action + '?' + getServiceParams(cluster.connection, true)
     return $axios.$post(url)
   },
 
   async fetchFunction(fctName, cluster) {
-    return await $axios.$get('/api/admin/v3/functions/' + fctName + '?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v3/functions/' + fctName + '?' + getServiceParams(cluster.connection, false)) // Does not work, if true
   },
 
   async fetchFunctionStatus(fctName, cluster) {
-    return await $axios.$get('/api/admin/v3/functions/' + fctName + '/status?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v3/functions/' + fctName + '/status?' + getServiceParams(cluster.connection, true))
   },
 
   async fetchFunctions(ns, cluster) {
-    return await $axios.$get('/api/admin/v3/functions/' + ns + '?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v3/functions/' + ns + '?' + getServiceParams(cluster.connection, false)) // Does not work, if true
   },
 
   async fetchTopicStats(topic, cluster) {

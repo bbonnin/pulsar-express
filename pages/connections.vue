@@ -17,6 +17,10 @@
             label="API URL">
           </el-table-column>
           <el-table-column
+            prop="fctWorkerUrl"
+            label="Function worker URL">
+          </el-table-column>
+          <el-table-column
             fixed="right"
             label="Actions"
             width="120">
@@ -44,6 +48,9 @@
         </el-form-item>
         <el-form-item label="Pulsar API url" prop="url">
           <el-input v-model="connection.url"></el-input>
+        </el-form-item>
+        <el-form-item label="Function Worker API url" prop="fctWorkerUrl">
+          <el-input v-model="connection.fctWorkerUrl"></el-input>
         </el-form-item>
         <el-form-item label="Token" prop="token">
           <el-input v-model="connection.token"></el-input>
@@ -78,6 +85,7 @@ export default {
       connection: {
         name: 'My local connection',
         url: 'http://localhost:8080',
+        fctWorkerUrl: '',
         token: ''
       },
       connectionRules: {
@@ -86,6 +94,10 @@ export default {
         ],
         url: [
           { required: true, message: 'Please set the Pulsar URL', trigger: 'blur' },
+          { pattern: /https?:\/\//, message: 'URL must start with http(s)://', trigger: 'blur' }
+        ],
+        fctWorkerUrl: [
+          { required: false, trigger: 'blur' },
           { pattern: /https?:\/\//, message: 'URL must start with http(s)://', trigger: 'blur' }
         ]
       }
