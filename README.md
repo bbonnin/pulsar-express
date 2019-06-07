@@ -46,8 +46,17 @@ If you want to configure connections (to be available to all users), you can:
 * Create a json file with the connections:
 ```json
 [
-  { "name": "test cluster", "url": "http://test-cluster-host:8080" },
-  { "name": "integration cluster", "url": "http://int-cluster-host:8080", "token": "<YOUR_TOKEN>" }
+  { "name": "test cluster", 
+     "url": "http://test-cluster-host:8080" },
+  
+  { "name": "integration cluster", 
+     "url": "http://int-cluster-host:8080", 
+     "token": "<YOUR_TOKEN>" },
+  
+  { "name": "prod cluster", 
+     "url": "http://prod-cluster-host:8080", 
+     "fctWorkerUrl": "http://prod-fct-worker-cluster-host:6750",
+     "token": "<YOUR_TOKEN>" },
 ]
 ```
 * and set the env variable `PE_CONFIG_FILE`
