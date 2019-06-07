@@ -96,6 +96,14 @@ In this page, you can see some basic informations about your clusters.
 
 ![Pulsar express clusters](docs/clusters.png)
 
+### Tenants
+
+![Pulsar express clusters](docs/tenants.png)
+
+### Namespaces
+
+![Pulsar express clusters](docs/namespaces.png)
+
 ### Topics
 
 ![Pulsar express topics](docs/topics.png)
