@@ -36,7 +36,8 @@
         </el-table-column>
         <el-table-column
           prop="storageSize"
-          label="Storage size (bytes)">
+          label="Storage size"
+          :formatter="cellFormatBytesToBestUnit">
         </el-table-column>
       </el-table>
 
@@ -147,7 +148,7 @@
 </template>
 
 <script>
-import { cellFormatFloat, cellFormatDateSince } from '@/services/utils'
+import { cellFormatFloat, cellFormatBytesToBestUnit, cellFormatDateSince } from '@/services/utils'
 import loading from '@/components/loading'
 import breadcrumb from '@/components/breadcrumb'
 import { mapState, mapActions } from 'vuex'
@@ -215,6 +216,7 @@ export default {
 
   methods: {
     cellFormatFloat,
+    cellFormatBytesToBestUnit,
     cellFormatDateSince,
 
     async reload() {
