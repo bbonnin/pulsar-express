@@ -2,9 +2,19 @@
 
 (Almost) full release notes.
 
+
+## Version 0.4.0
+
+* Features:
+  * Tenant page
+  * Namespace page
+  * Function worker in connection definition
+* Updates in UI
+
+
 ## Version 0.3.1
 
-* Fix: Fix: axios queries not using ovrriden port/host
+* Fix: axios queries not using ovrriden port/host
 
 
 ## Version 0.3.0

@@ -16,7 +16,10 @@ if (process.env.PE_CONNECTION_URL) {
   const name = process.env.PE_CONNECTION_NAME ? 
     process.env.PE_CONNECTION_NAME : 
     process.env.PE_CONNECTION_URL.replace(/https?:\/\//, '')
-  const connection = { name, url: process.env.PE_CONNECTION_URL, serverConfig: true }
+  const connection = { name, 
+    url: process.env.PE_CONNECTION_URL,
+    fctWorkerUrl: process.env.PE_CONNECTION_FCT_WORKER_URL,
+    serverConfig: true }
 
   if (process.env.PE_CONNECTION_TOKEN) {
     connection.token = process.env.PE_CONNECTION_TOKEN
