@@ -43,6 +43,11 @@
           :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
+          prop="stats.storageSize"
+          label="Storage size"
+          :formatter="cellFormatBytesToBestUnit">
+        </el-table-column>
+        <el-table-column
           fixed="right"
           label="Actions"
           width="200">
@@ -105,7 +110,7 @@
 </template>
 
 <script>
-import { cellFormatFloat } from '@/services/utils'
+import { cellFormatFloat, cellFormatBytesToBestUnit } from '@/services/utils'
 import loading from '@/components/loading'
 import breadcrumb from '@/components/breadcrumb'
 import { mapState, mapActions } from 'vuex'
@@ -152,6 +157,7 @@ export default {
 
   methods: {
     cellFormatFloat,
+    cellFormatBytesToBestUnit,
 
     ...mapActions('context', ['setTopic', 'setTopics']),
 
@@ -240,7 +246,6 @@ export default {
           persistent: ref.topic.startsWith('persistent'), 
           stats: topicStats })
       }
-
       this.setTopics(this.topics)
 
       this.loading = false
