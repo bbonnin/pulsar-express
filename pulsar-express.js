@@ -16,10 +16,13 @@ process.argv = process.argv.slice(0, 2).concat([
   '-p', port
 ])
 
+const pkg = require(__dirname + '/package.json')
+const title = ' PULSAR EXPRESS (v' + pkg.version + ') '
+
 console.log()
-console.log('\t╭────────────────╮')
-console.log('\t│ PULSAR EXPRESS │')
-console.log('\t╰────────────────╯')
+console.log('\t╭' + '─'.repeat(title.length) + '╮')
+console.log('\t│' + title + '│')
+console.log('\t╰' + '─'.repeat(title.length) + '╯')
 console.log()
 
 consola.wrapAll()
