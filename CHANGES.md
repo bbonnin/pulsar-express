@@ -2,6 +2,11 @@
 
 (Almost) full release notes.
 
+## Version 0.4.2
+
+* Features:
+  * Properties of a namespace
+
 
 ## Version 0.4.0
 
