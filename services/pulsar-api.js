@@ -39,6 +39,10 @@ export default $axios => ({
     return await $axios.$get('/api/admin/v2/' + topic + '/stats?' + getServiceParams(cluster.connection))
   },
 
+  async fetchNamespace(ns, cluster) {
+    return await $axios.$get('/api/admin/v2/namespaces/' + ns + '?' + getServiceParams(cluster.connection))
+  },
+
   async fetchBrokers(clusters) {
     let brokers = []
 

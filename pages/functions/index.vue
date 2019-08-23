@@ -62,7 +62,7 @@
       <el-alert
         title="Bad news"
         type="warning"
-        description="Cannot get any information about functions. Maybe you haven't defined any connections or the brokers are unreachable."
+        description="Cannot get any information about functions. Maybe you haven't defined any connections or the brokers are unreachable (or maybe it's time to drink a beer...)."
         show-icon>
       </el-alert>
     </div>
