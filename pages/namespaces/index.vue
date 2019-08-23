@@ -14,6 +14,19 @@
           prop="cluster.name"
           label="Cluster">
         </el-table-column>
+        <el-table-column
+          fixed="right"
+          label="Actions"
+          width="120">
+          <template slot-scope="scope">
+            <el-button
+              @click.native.prevent="showDetails(scope.row.id)"
+              type="primary" plain round
+              size="mini">
+              Details
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
     <div v-else>
@@ -59,6 +72,8 @@ export default {
   },
 
   methods: {
+    ...mapActions('context', ['setNamespace', 'setNamespaces']),
+
     async reload() {
       this.loading = true
       let connections = []
@@ -75,8 +90,16 @@ export default {
       const tenants = await this.$pulsar.fetchTenants(clusters)  
       this.namespaces = await this.$pulsar.fetchNamespaces(tenants)
 
+      this.namespaces = this.namespaces.map((ns, idx) => ({ ...ns, id: idx }))
+      this.setNamespaces(this.namespaces)
+
       this.loading = false
-    }   
+    },
+
+    showDetails(id) {
+      this.setNamespace(id)
+      this.$router.push({ path: '/namespaces/' + id })
+    },
   },
 
   head() {

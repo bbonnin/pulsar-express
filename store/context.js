@@ -1,12 +1,22 @@
 export const state = () => ({
   topics: null,
   topic: null,
+  namespace: null,
+  namespaces: null,
   function: null,
   functions: null,
   cluster: null
 })
 
 export const mutations = {
+  setNamespaces(state, ns) {
+    state.namespaces = ns
+  },
+
+  setNamespace(state, ns) {
+    state.namespace = ns
+  },
+
   setFunction(state, fct) {
     state.function = fct
   },
@@ -29,6 +39,14 @@ export const mutations = {
 }
 
 export const actions = {
+  async setNamespaces({ commit }, ns) {
+    commit('setNamespaces', ns)
+  },
+
+  async setNamespace({ commit }, ns) {
+    commit('setNamespace', ns)
+  },
+
   async setFunctions({ commit }, functions) {
     commit('setFunctions', functions)
   },
