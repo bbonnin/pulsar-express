@@ -195,12 +195,39 @@ For Docker:
 
 > A lot of things of course :), but the main step is to change the architecture and add a backend instead of making the queries from the browser. This backend could provide api, cache, better management of configuration, ...
 
-* Navigation: add a way to change the cluster in each page
-* More functions for each items (delete, update, ...)
-* Auto refresh
-* ...And many things !!!
-
-
+* Clusters
+  * [x] connections to clusters (configured on server and client side)
+  * [x] list clusters
+  * [ ] get config of a cluster
+  * [ ] manage clusters
+* Tenants
+  * [x] list the tenants
+  * [x] create a tenant (simple way)
+  * [x] delete a tenant
+  * [ ] get config of a tenant
+  * [ ] update config of a tenant
+* Namespaces
+  * [x] list the namespace
+  * [ ] create a namespace
+  * [ ] delete a namespace
+  * [x] get config of a namespace
+  * [ ] update config of a namespace
+  * [ ] any other features (persistence policies, messages ttl, backlog quotas...)
+* Topics
+  * [x] list the topics
+  * [ ] create a topic
+  * [x] delete a topic
+  * [x] get stats about a topic
+  * [x] get subscriptions of a topic
+  * [ ] manage subscriptions
+  * [ ] manage partitioned topics
+  * [ ] any other features (reset cursor, expire messages, ...)
+    * [x] peek messages
+* Functions
+  * [x] list the functions
+  * [ ] get config of a function
+  * [x] start/stop instances
+  * [ ] manage functions (deploy ? delete ? create ? simple python function for test purpose ?)
 
 ## Known issues
 

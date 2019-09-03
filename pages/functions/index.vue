@@ -19,11 +19,14 @@
         </el-table-column>
         <el-table-column
           prop="infos.runtime"
-          label="Runtime">
+          label="Runtime"
+          width="100">
         </el-table-column>
         <el-table-column
-          prop="infos.className"
           label="Class name">
+          <template slot-scope="scope">
+            {{shortClassName(scope.row.infos.className)}}
+          </template>
         </el-table-column>
         <el-table-column
           label="Input topics">
@@ -73,7 +76,7 @@
 </template>
 
 <script>
-import { cellFormatFloat, cellFormatSimpleTopicName, getSimpleTopicName } from '@/services/utils'
+import { cellFormatFloat, cellFormatSimpleTopicName, getSimpleTopicName, shortClassName } from '@/services/utils'
 import loading from '@/components/loading'
 import breadcrumb from '@/components/breadcrumb'
 import { mapState, mapActions } from 'vuex'
@@ -113,6 +116,7 @@ export default {
     cellFormatFloat,
     cellFormatSimpleTopicName,
     getSimpleTopicName,
+    shortClassName,
 
     ...mapActions('context', ['setFunction', 'setFunctions']),
 

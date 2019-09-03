@@ -24,7 +24,7 @@ body {
 
 .dataview-container {
   padding: 20px;
-  width: 80%;
+  width: 90%;
   margin: 4rem auto;
 }
 

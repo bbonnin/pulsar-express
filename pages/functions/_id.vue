@@ -10,11 +10,15 @@
         style="width: 100%">
         <el-table-column
           prop="runtime"
-          label="Runtime">
+          label="Runtime"
+          width="150">
         </el-table-column>
         <el-table-column
           prop="className"
           label="Class name">
+          <template slot-scope="scope">
+            {{shortClassName(scope.row.className)}}
+          </template>
         </el-table-column>
         <el-table-column
           prop="autoAck"
@@ -130,7 +134,7 @@
 </template>
 
 <script>
-import { cellFormatFloat, cellFormatSimpleTopicName, getSimpleTopicName, cellFormatBoolean } from '@/services/utils'
+import { cellFormatFloat, cellFormatSimpleTopicName, getSimpleTopicName, cellFormatBoolean, shortClassName } from '@/services/utils'
 import breadcrumb from '@/components/breadcrumb'
 import { mapState, mapActions } from 'vuex'
 
@@ -188,6 +192,7 @@ export default {
     cellFormatSimpleTopicName,
     getSimpleTopicName,
     cellFormatBoolean,
+    shortClassName,
 
     async reload() {
       const status = await this.$pulsar.fetchFunctionStatus(this.fullname, this.currentFunction.cluster)
