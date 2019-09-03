@@ -2,6 +2,12 @@
 
 (Almost) full release notes.
 
+## Version 0.4.3
+
+* Features:
+  * Peek messages
+
+
 ## Version 0.4.2
 
 * Features:
