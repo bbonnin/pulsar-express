@@ -131,6 +131,7 @@
       </el-table>
 
       <div class="button-bar">
+        <el-button type="primary" @click="peekMessagesVisible = true">Peek messages</el-button>
         <el-button @click="reload()">Reload</el-button>
       </div>
     </div>
@@ -143,7 +144,41 @@
       </el-alert>
     </div>
 
-    
+    <el-dialog title="Peek messages" :visible.sync="peekMessagesVisible" fullscreen>
+      <el-form ref="peekMsgForm" :model="peekMessagesInfo" :rules="peekMsgRules" label-width="200px">
+        <el-form-item label="Subscription" prop="subscription">
+          <el-select v-model="peekMessagesInfo.subscription" placeholder="Please select a subscription">
+            <el-option v-for="sub in subscriptions" :key="sub.name" :label="sub.name" :value="sub.name"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Nb of messages" prop="count">
+          <el-input v-model.number="peekMessagesInfo.count"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="peekMessages('peekMsgForm')">Peek messages</el-button>
+          <el-button @click="peekMessagesVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+      <div>
+        <el-table
+          v-if="lastMessages.length > 0"
+          :data="lastMessages"
+          style="width: 100%"
+          height="65vh">
+          <el-table-column
+            sortable
+            width="300"
+            prop="publishTime"
+            label="Publish Time">
+          </el-table-column>
+          <el-table-column
+            prop="text"
+            label="Message as text">
+          </el-table-column>
+          
+        </el-table>
+      </div>
+    </el-dialog>
   </div>
 </template>
 
@@ -165,7 +200,30 @@ export default {
   data() {
     return {
       loading: false,
-      stats: null
+      stats: null,
+      lastMessages: [],
+      peekMessagesVisible: false,
+      peekMessagesInfo: {
+        count: 1,
+        subscription: ''
+      },
+      peekMsgRules: {
+        subscription: [
+          { required: true, message: 'Please select a subscription', trigger: 'change' }
+        ],
+        count: [
+          {
+            required: true, trigger: 'blur',
+            validator: (rule, value, callback) => {
+              if (!Number.isInteger(value) || value <= 0) {
+                callback(new Error('Please set a value > 0'));
+              } else {
+                callback()
+              }
+            }
+          }
+        ]
+      }
     }
   },
 
@@ -224,6 +282,36 @@ export default {
       const persist = this.currentTopic.persistent ? "persistent" : "non-persistent"
       this.stats = await this.$pulsar.fetchTopicStats(persist + '/' + this.currentTopic.name, this.currentTopic.cluster)
       this.loading = false
+    },
+
+    peekMessages(formName) {
+      this.lastMessages = []
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          let topicName = this.currentTopic.persistent ? "persistent" : "non-persistent"
+          topicName += '/' + this.currentTopic.name
+
+          for (let i=1; i <= this.peekMessagesInfo.count; i++) {
+            this.$pulsar.peekMessages(topicName, this.peekMessagesInfo.subscription, i, this.currentTopic.cluster)
+              .then((resp) => {
+                this.lastMessages.push({ 
+                  raw: resp.data, text: resp.data.substring(6), 
+                  publishTime: resp.headers['x-pulsar-publish-time'].replace('T', ' ')
+                })
+              })
+              .catch ((err) => {
+                this.$message({
+                  type: 'error',
+                  message: 'Error: ' + err
+                })
+              })
+          }
+          //this.peekMessagesVisible = false
+        }
+        else {
+          return false
+        }
+      })
     }
   },
 

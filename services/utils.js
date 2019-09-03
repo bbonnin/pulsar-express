@@ -39,3 +39,13 @@ export function getSimpleTopicName(topicName) {
 export function cellFormatSimpleTopicName(row, column, cellValue, index) {
   return getSimpleTopicName(cellValue)
 }
+
+export function shortClassName(className) {
+  const items = className.split('.')
+
+  if (items.length > 1) {
+    return items.slice(0, items.length - 1).map(n => n.charAt(0)).join('.') + '.' + items[items.length - 1]
+  }
+
+  return className
+}

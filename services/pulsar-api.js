@@ -148,6 +148,10 @@ export default $axios => ({
     return $axios.$put('/api/admin/v2/' + topicName + '?' + getServiceParams(cluster.connection))
   },
 
+  peekMessages(topicName, subName, count, cluster) {
+    return $axios.get('/api/admin/v2/' + topicName + '/subscription/' + subName + '/position/' + count + '?' + getServiceParams(cluster.connection))
+  },
+
   async fetchBrokers(clusters) {
     let brokers = []
 

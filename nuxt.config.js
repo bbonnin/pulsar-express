@@ -42,7 +42,8 @@ export default {
   plugins: [
     '@/plugins/element-ui',
     '@/plugins/lodash',
-    '@/plugins/api'
+    '@/plugins/api',
+    '@/plugins/moment'
   ],
 
   /*

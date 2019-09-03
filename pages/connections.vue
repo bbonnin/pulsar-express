@@ -28,7 +28,7 @@
               <el-button
                 v-if="!scope.row.serverConfig"
                 @click.native.prevent="deleteConnection(scope.$index)"
-                type="danger" plain
+                type="danger" plain round
                 size="mini">
                 Delete
               </el-button>
