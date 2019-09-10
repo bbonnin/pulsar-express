@@ -215,7 +215,8 @@ For Docker:
   * [ ] any other features (persistence policies, messages ttl, backlog quotas...)
 * Topics
   * [x] list the topics
-  * [ ] create a topic
+  * [x] create a topic
+  * [ ] create a partitioned topic
   * [x] delete a topic
   * [x] get stats about a topic
   * [x] get subscriptions of a topic
@@ -228,10 +229,8 @@ For Docker:
   * [ ] get config of a function
   * [x] start/stop instances
   * [ ] manage functions (deploy ? delete ? create ? simple python function for test purpose ?)
-
-## Known issues
-
-* When creating a topic, the API response is always 405 Method Not Allowed :(
+* Connections
+  * [x] update a connection
 
 
 ## Misc

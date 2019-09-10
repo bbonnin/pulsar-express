@@ -1,4 +1,4 @@
-import { getConnections, removeConnection, addConnection } from '@/services/storage'
+import { getConnections, removeConnection, addConnection, updateConnection } from '@/services/storage'
 import { getSharedConnections } from '@/services/internal-api'
 
 
@@ -37,6 +37,12 @@ export const actions = {
 
   async addConnection({ commit }, connection) {
     const connections = addConnection(connection)
+    commit('addConnections', connections)
+  },
+
+  async updateConnection({ commit, state }, { connection, idx }) {
+    const localIdx = idx - (state.sharedConnections ? state.sharedConnections.length : 0)
+    const connections = updateConnection(connection, localIdx)
     commit('addConnections', connections)
   }
 }

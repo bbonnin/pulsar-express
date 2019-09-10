@@ -23,8 +23,15 @@
           <el-table-column
             fixed="right"
             label="Actions"
-            width="120">
+            width="200">
             <template slot-scope="scope">
+              <el-button
+                v-if="!scope.row.serverConfig"
+                @click.native.prevent="openConnection(scope.$index)"
+                type="primary" plain round
+                size="mini">
+                Edit
+              </el-button>
               <el-button
                 v-if="!scope.row.serverConfig"
                 @click.native.prevent="deleteConnection(scope.$index)"
@@ -37,11 +44,11 @@
         </el-table>
       </div>
       <div class="button-bar">
-        <el-button type="primary" @click="addConnectionVisible = true">Add a connection</el-button>
+        <el-button type="primary" @click="openConnection(-1)">Add a connection</el-button>
       </div>
     </div>
 
-    <el-dialog title="Add a connection" :visible.sync="addConnectionVisible">
+    <el-dialog :title="upsertConnectionId < 0 ? 'Add a connection' : 'Update a connection'" :visible.sync="upsertConnectionVisible">
       <el-form ref="connectionForm" :model="connection" :rules="connectionRules" label-width="200px">
         <el-form-item label="Connection name" prop="name">
           <el-input v-model="connection.name"></el-input>
@@ -56,8 +63,8 @@
           <el-input v-model="connection.token"></el-input>
         </el-form-item>
         <el-form-item>
-          <el-button type="primary" @click="createConnection('connectionForm')">Create</el-button>
-          <el-button @click="addConnectionVisible = false">Cancel</el-button>
+          <el-button type="primary" @click="upsertConnection('connectionForm')">{{ upsertConnectionId < 0 ? 'Create' : 'Update' }}</el-button>
+          <el-button @click="upsertConnectionId = undefined">Cancel</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -68,6 +75,13 @@
 <script>
 import breadcrumb from '@/components/breadcrumb'
 import { mapState, mapActions } from 'vuex'
+
+const defaultConnection = {
+  name: 'My local connection',
+  url: 'http://localhost:8080',
+  fctWorkerUrl: '',
+  token: ''
+}
 
 export default {
   name: 'connections',
@@ -80,14 +94,9 @@ export default {
 
   data() {
     return {
-      addConnectionVisible: false,
+      upsertConnectionId: undefined,
       withSecurity: false,
-      connection: {
-        name: 'My local connection',
-        url: 'http://localhost:8080',
-        fctWorkerUrl: '',
-        token: ''
-      },
+      connection: defaultConnection,
       connectionRules: {
         name: [
           { required: true, message: 'Please set a connection name', trigger: 'blur' }
@@ -104,25 +113,48 @@ export default {
     }
   },
 
-  computed: mapState('connections', ['connections']),
+  computed: {
+    ...mapState('connections', ['connections']),
+
+    upsertConnectionVisible: {
+      get() {
+        return this.upsertConnectionId >= -1
+      },
+      set() {
+        this.upsertConnectionId = undefined
+      }
+    }
+  },
 
   mounted() {
     this.$store.dispatch('connections/fetchConnections')
   },
 
   methods: {
-    createConnection: function (formName) {
+    openConnection(idx) {
+      this.upsertConnectionId = idx
+      this.connection = idx === -1 ? defaultConnection : this._.clone(this.connections[idx])
+    },
+
+    upsertConnection(formName) {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.connection.token = this.connection.token.trim()
-          this.addConnection(this._.clone(this.connection))
-          this.addConnectionVisible = false
+
+          if (this.upsertConnectionId > -1) {
+            this.updateConnection({ connection: this._.clone(this.connection), idx: this.upsertConnectionId })
+          }
+          else {
+            this.addConnection(this._.clone(this.connection))
+          }
+
+          this.upsertConnectionId = undefined
         }
         return valid
       })
     },
 
-    ...mapActions('connections', ['deleteConnection', 'addConnection'])
+    ...mapActions('connections', ['deleteConnection', 'addConnection', 'updateConnection'])
   },
 
   head() {
