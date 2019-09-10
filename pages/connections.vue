@@ -10,7 +10,7 @@
             fixed
             prop="name"
             label="Name"
-            width="200">
+            width="300">
           </el-table-column>
           <el-table-column
             prop="url"
