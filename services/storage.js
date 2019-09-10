@@ -32,4 +32,13 @@ export function getConnections() {
   return pulsar.connections || []
 }
 
-export default { getConnections, addConnection, removeConnection }
+export function updateConnection(connection, idx) {
+  const connections = getConnections()
+
+  connections.splice(idx, 1, connection)
+  storeConnections(connections)
+
+  return connections
+}
+
+export default { getConnections, addConnection, removeConnection, updateConnection }
