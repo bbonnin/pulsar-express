@@ -118,6 +118,10 @@ export default $axios => ({
     return namespaces
   },
 
+  createNamespace(tenantName, namespace, cluster) {
+    return $axios.$put('/api/admin/v2/namespaces/' + tenantName + '/' + namespace + '?' + getServiceParams(cluster.connection))
+  },
+
   async fetchTopicsNS(namespaces) {
     let topics = []
 
@@ -200,5 +204,15 @@ export default $axios => ({
     }
 
     return availableClusters
-  }
+  },
+
+  updateClusterConfig(cluster) {
+    return $axios.$post('/api/admin/v2/clusters/' + cluster.name + '?' + getServiceParams(cluster.connection),
+      { 
+        serviceUrl: cluster.serviceUrl, 
+        serviceUrlTls: cluster.serviceUrlTls, 
+        brokerServiceUrl: cluster.brokerServiceUrl, 
+        brokerServiceUrlTls: cluster.brokerServiceUrlTls
+      })
+  },
 })

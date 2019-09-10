@@ -9,10 +9,13 @@
         :default-sort = "{prop: 'name', order: 'descending'}">
         <el-table-column
           fixed
-          prop="name"
           label="Name"
+          prop="name"
           sortable
           width="200">
+          <template slot-scope="scope">
+            <el-button type="text" @click.native.prevent="showConfig(scope.row)">{{ scope.row.name }}</el-button>
+          </template>
         </el-table-column>
         <el-table-column
           prop="brokerServiceUrl"
@@ -24,8 +27,8 @@
         </el-table-column>
         <el-table-column
           fixed="right"
-          label="Actions"
-          width="460">
+          width="460"
+          label="Quick access">
           <template slot-scope="scope">
             <el-button
               @click.native.prevent="showItems(scope.row, '/brokers')"
@@ -72,6 +75,33 @@
     <div class="button-bar">
       <el-button @click="reload()">Reload</el-button>
     </div>
+
+    <el-drawer
+      title="Configuration"
+      :visible.sync="configVisible"
+      size="50%"
+      direction="rtl">
+      <div class="config-drawer">
+        <el-form ref="configForm" :model="clusterConfig" :rules="configRules" label-width="200px">
+          <el-form-item label="HTTP Service URL" prop="serviceUrl">
+            <el-input v-model="clusterConfig.serviceUrl"></el-input>
+          </el-form-item>
+          <el-form-item label="HTTPS Service URL" prop="serviceUrlTls">
+            <el-input v-model="clusterConfig.serviceUrlTls"></el-input>
+          </el-form-item>
+          <el-form-item label="Broker Service URL" prop="brokerServiceUrl">
+            <el-input v-model="clusterConfig.brokerServiceUrl"></el-input>
+          </el-form-item>
+          <el-form-item label="Broker Service URL (TLS)" prop="brokerServiceUrlTls">
+            <el-input v-model="clusterConfig.brokerServiceUrlTls"></el-input>
+          </el-form-item>
+          <el-form-item>
+            <el-button type="primary" @click="updateConfig('configForm')">Update</el-button>
+            <el-button @click="configVisible = false">Cancel</el-button>
+          </el-form-item>
+        </el-form>
+      </div>
+    </el-drawer>
   </div> 
 </template>
 
@@ -92,7 +122,25 @@ export default {
   data() {
     return {
       clusters: [],
-      loading: false
+      loading: false,
+      configVisible: false,
+      clusterConfig: {},
+      configRules: { 
+        serviceUrl: [
+          { required: true, message: 'Please set a url', trigger: 'blur' },
+          { pattern: /http:\/\//, message: 'URL must start with http://', trigger: 'blur' }
+        ],
+        serviceUrlTls: [
+          { pattern: /https:\/\//, message: 'URL must start with https://', trigger: 'blur' }
+        ],
+        brokerServiceUrl: [
+          { required: true, message: 'Please set a url', trigger: 'blur' },
+          { pattern: /pulsar:\/\//, message: 'URL must start with pulsar://', trigger: 'blur' }
+        ],
+        brokerServiceUrlTls: [
+          { pattern: /pulsar\+ssl:\/\//, message: 'URL must start with pulsar+ssl://', trigger: 'blur' }
+        ]
+      }
     }
   },
 
@@ -108,6 +156,35 @@ export default {
     showItems(cluster, path) {
       this.setCluster(cluster)
       this.$router.push({ path })
+    },
+
+    showConfig(cluster) {
+      this.configVisible = true
+      this.clusterConfig = cluster
+    },
+
+    updateConfig(formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$pulsar.updateClusterConfig(this.clusterConfig)
+          .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Update completed'
+              })
+              this.reload()
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Update error: ' + err
+              })
+            })
+          this.configVisible = false
+          this.clusterConfig = {}
+        }
+        return valid
+      })
     },
 
     async reload() {
@@ -130,5 +207,9 @@ export default {
 <style scoped>
 .el-button+.el-button {
   margin-left: 0px;
+}
+
+.config-drawer {
+  padding: 20px;
 }
 </style>

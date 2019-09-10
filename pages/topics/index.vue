@@ -79,12 +79,22 @@
 
     <div class="button-bar">
       <!-- TODO: add cluster selection -->
-      <!--el-button type="primary" @click="createVisible = true">Create topic</el-button-->
+      <el-button type="primary" @click="createVisible = true">Create topic</el-button>
       <el-button @click="reload()">Reload</el-button>
     </div>
 
     <el-dialog title="Create a topic" :visible.sync="createVisible">
       <el-form ref="createForm" :model="newTopic" :rules="topicRules" label-width="200px">
+        <el-form-item label="Cluster" prop="cluster">
+          <el-select v-model="newTopic.cluster" placeholder="Cluster">
+            <el-option
+              v-for="(item, idx) in clusters"
+              :key="idx"
+              :label="item.name"
+              :value="item">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item label="Type">
           <el-radio-group v-model="newTopic.type">
             <el-radio label="persistent">Persistent</el-radio>
@@ -127,13 +137,18 @@ export default {
   data() {
     return {
       createVisible: false,
+      clusters: [],
       newTopic: {
+        cluster: null,
         type: 'persistent',
         tenant: 'public',
         namespace: 'default',
         name: ''
       },
       topicRules: {
+        cluster: [
+          { required: true, message: 'Please select a cluster', trigger: 'change' }
+        ],
         tenant: [
           { required: true, message: 'Please set a tenant name', trigger: 'blur' }
         ],
@@ -166,7 +181,7 @@ export default {
         if (valid) {
           const fullname = this.newTopic.type + '/' + 
             this.newTopic.tenant + '/' + this.newTopic.namespace + '/' + this.newTopic.name
-          this.$pulsar.createTopic(fullname, this.cluster)
+          this.$pulsar.createTopic(fullname, this.newTopic.cluster)
             .then(() => {
               this.$message({
                 type: 'success',
@@ -232,8 +247,8 @@ export default {
         connections = this.$store.state.connections.connections
       }
 
-      const clusters = await this.$pulsar.fetchClusters(connections)
-      const topicRefs = await this.$pulsar.fetchTopics(clusters)
+      this.clusters = await this.$pulsar.fetchClusters(connections)
+      const topicRefs = await this.$pulsar.fetchTopics(this.clusters)
 
       this.topics = []
 
