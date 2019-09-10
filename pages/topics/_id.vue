@@ -131,7 +131,14 @@
       </el-table>
 
       <div class="button-bar">
-        <el-button type="primary" @click="peekMessagesVisible = true">Peek messages</el-button>
+        <el-dropdown @command="handleAction">
+          <el-button type="primary">
+            Actions <i class="el-icon-arrow-down el-icon--right"></i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="peekMessages">Peek messages</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
         <el-button @click="reload()">Reload</el-button>
       </div>
     </div>
@@ -211,8 +218,7 @@ export default {
         subscription: [
           { required: true, message: 'Please select a subscription', trigger: 'change' }
         ],
-        count: [
-          {
+        count: [{
             required: true, trigger: 'blur',
             validator: (rule, value, callback) => {
               if (!Number.isInteger(value) || value <= 0) {
@@ -282,6 +288,14 @@ export default {
       const persist = this.currentTopic.persistent ? "persistent" : "non-persistent"
       this.stats = await this.$pulsar.fetchTopicStats(persist + '/' + this.currentTopic.name, this.currentTopic.cluster)
       this.loading = false
+    },
+
+    handleAction(action) {
+      switch (action) {
+        case 'peekMessages':
+          this.peekMessagesVisible = true
+          break
+      }
     },
 
     peekMessages(formName) {
