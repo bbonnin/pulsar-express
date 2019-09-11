@@ -15,6 +15,19 @@
           prop="broker"
           label="Broker (web service address)">
         </el-table-column>
+        <el-table-column
+          fixed="right"
+          width="200"
+          label="Actions">
+          <template slot-scope="scope">
+            <el-button
+              @click.native.prevent="checkHealth(scope.row)"
+              type="primary" plain round
+              size="mini">
+              Health check
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
     <div v-else>
@@ -75,6 +88,23 @@ export default {
       this.brokers = await this.$pulsar.fetchBrokers(clusters)
 
       this.loading = false
+    },
+
+    checkHealth(brokerInfo) {
+      this.$pulsar.checkBrokerHealth(brokerInfo.broker)
+        .then((resp) => {
+          const type = resp === 'ok' ? 'success' : 'info'
+          this.$message({
+            type,
+            message: 'Health check: ' + resp
+          })
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Health check error: ' + err
+          })
+        })
     }
   },
 

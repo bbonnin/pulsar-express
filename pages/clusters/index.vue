@@ -167,7 +167,7 @@ export default {
       this.$refs[formName].validate((valid) => {
         if (valid) {
           this.$pulsar.updateClusterConfig(this.clusterConfig)
-          .then(() => {
+            .then(() => {
               this.$message({
                 type: 'success',
                 message: 'Update completed'
