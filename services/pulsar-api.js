@@ -59,6 +59,10 @@ export default $axios => ({
     return brokers
   },
 
+  checkBrokerHealth(brokerUrl) {
+    return $axios.$get('/api/admin/v2/brokers/health?u=http://' + brokerUrl)
+  },
+
   async fetchTenantsConfig(clusters) {
     const tenants = await this.fetchTenants(clusters)
 
