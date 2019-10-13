@@ -17,13 +17,19 @@
         <el-table-column
           fixed="right"
           label="Actions"
-          width="120">
+          width="200">
           <template slot-scope="scope">
             <el-button
               @click.native.prevent="showDetails(scope.row.id)"
               type="primary" plain round
               size="mini">
               Details
+            </el-button>
+            <el-button
+              @click.native.prevent="deleteNamespace(scope.row.id)"
+              type="danger" plain round
+              size="mini">
+              Delete
             </el-button>
           </template>
         </el-table-column>
@@ -140,6 +146,32 @@ export default {
         }
         return valid
       })
+    },
+
+    deleteNamespace(id) {      
+      this.$confirm('This will also permanently delete the topics under it. Continue?', 'Warning', {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        })
+        .then(() => {
+          const ns = this.namespaces[id]
+
+          this.$pulsar.deleteNamespace(ns.namespace, ns.cluster)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Delete completed'
+              })
+              this.reload()
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Delete error: ' + err
+              })
+            })
+        })
     },
 
     async reload() {
