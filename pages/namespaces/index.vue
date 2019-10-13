@@ -39,8 +39,34 @@
     </div>
     
     <div class="button-bar">
+      <el-button type="primary" @click="createVisible = true">Create namespace</el-button>
       <el-button @click="reload()">Reload</el-button>
     </div>
+
+    <el-dialog title="Create a namespace" :visible.sync="createVisible">
+      <el-form ref="createForm" :model="newNamespace" :rules="namespaceRules" label-width="200px">
+        <el-form-item label="Cluster" prop="cluster">
+          <el-select v-model="newNamespace.cluster" placeholder="Cluster">
+            <el-option
+              v-for="(item, idx) in clusters"
+              :key="idx"
+              :label="item.name"
+              :value="item">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Tenant" prop="tenant">
+          <el-input v-model="newNamespace.tenant"></el-input>
+        </el-form-item>
+        <el-form-item label="Namespace" prop="namespace">
+          <el-input v-model="newNamespace.name"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="createNamespace('createForm')">Create</el-button>
+          <el-button @click="createVisible = false">Cancel</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -61,6 +87,24 @@ export default {
   data() {
     return {
       namespaces: [],
+      createVisible: false,
+      clusters: [],
+      newNamespace: {
+        cluster: null,
+        tenant: 'public',
+        name: ''
+      },
+      namespaceRules: {
+        cluster: [
+          { required: true, message: 'Please select a cluster', trigger: 'change' }
+        ],
+        tenant: [
+          { required: true, message: 'Please set a tenant name', trigger: 'blur' }
+        ],
+        name: [
+          { required: true, message: 'Please set a namespace name', trigger: 'blur' }
+        ],
+      },
       loading: false
     }
   },
@@ -74,6 +118,30 @@ export default {
   methods: {
     ...mapActions('context', ['setNamespace', 'setNamespaces']),
 
+    createNamespace: function (formName) {
+      this.$refs[formName].validate((valid) => {
+        if (valid) {
+          this.$pulsar.createNamespace(this.newNamespace.tenant, this.newNamespace.name, this.newNamespace.cluster)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Create completed'
+              })
+              this.reload()
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Create error: ' + err
+              })
+            })
+          this.createVisible = false
+          this.newNamespace.name = ''
+        }
+        return valid
+      })
+    },
+
     async reload() {
       this.loading = true
       let connections = []
@@ -86,8 +154,8 @@ export default {
         connections = this.$store.state.connections.connections
       }
 
-      const clusters = await this.$pulsar.fetchClusters(connections)
-      const tenants = await this.$pulsar.fetchTenants(clusters)  
+      this.clusters = await this.$pulsar.fetchClusters(connections)
+      const tenants = await this.$pulsar.fetchTenants(this.clusters)  
       this.namespaces = await this.$pulsar.fetchNamespaces(tenants)
 
       this.namespaces = this.namespaces.map((ns, idx) => ({ ...ns, id: idx }))
