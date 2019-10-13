@@ -27,38 +27,43 @@
         </el-table-column>
         <el-table-column
           fixed="right"
-          width="460"
+          width="300"
           label="Quick access">
           <template slot-scope="scope">
             <el-button
               @click.native.prevent="showItems(scope.row, '/brokers')"
-              type="primary" plain round
-              size="mini">
-              Brokers
+              type="plain" plain round
+              size="mini"
+              title="Brokers">
+              <img src="brokers.png" width="18" alt="Brokers"/>
             </el-button>
             <el-button
               @click.native.prevent="showItems(scope.row, '/tenants')"
-              type="primary" plain round
-              size="mini">
-              Tenants
+              type="plain" plain round
+              size="mini"
+              title="Tenants">
+              <img src="tenants.png" width="18" alt="Tenants"/>
             </el-button>
             <el-button
               @click.native.prevent="showItems(scope.row, '/namespaces')"
-              type="primary" plain round
-              size="mini">
-              Namespaces
+              type="plain" plain round
+              size="mini"
+              title="Namespaces">
+              <img src="namespaces.png" width="18" alt="Namespaces"/>
             </el-button>
             <el-button
               @click.native.prevent="showItems(scope.row, '/topics')"
-              type="primary" plain round
-              size="mini">
-              Topics
+              type="plain" plain round
+              size="mini"
+              title="Topics">
+              <img src="topics.png" width="18" alt="Topics"/>
             </el-button>
             <el-button
               @click.native.prevent="showItems(scope.row, '/functions')"
-              type="primary" plain round
-              size="mini">
-              Functions
+              type="plain" plain round
+              size="mini"
+              title="Functions">
+              <img src="functions.png" width="18" alt="Functions"/>
             </el-button>
           </template>
         </el-table-column>
