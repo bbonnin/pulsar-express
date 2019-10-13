@@ -2,6 +2,15 @@
 
 (Almost) full release notes.
 
+## Version 0.5.0
+
+* Features:
+  * Update cluster configuration
+  * Broker health check
+  * Namespace creation and deletion
+  * Topic creation
+
+
 ## Version 0.4.3
 
 * Features:
