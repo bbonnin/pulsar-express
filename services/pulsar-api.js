@@ -126,6 +126,10 @@ export default $axios => ({
     return $axios.$put('/api/admin/v2/namespaces/' + tenantName + '/' + namespace + '?' + getServiceParams(cluster.connection))
   },
 
+  deleteNamespace(namespace, cluster) {
+    return $axios.$delete('/api/admin/v2/namespaces/' + namespace + '?' + getServiceParams(cluster.connection))
+  },
+
   async fetchTopicsNS(namespaces) {
     let topics = []
 
