@@ -255,7 +255,21 @@ export default {
 
       this.topics = []
 
-      for (const ref of topicRefs) {
+      this.topics = await Promise.all(
+        topicRefs.map(ref =>
+          this.$pulsar.fetchTopicStats(ref.topic.replace(":/",""), ref.cluster)
+            .then((topicStats) => ({
+              cluster: ref.cluster,
+              name: ref.topic.substring(ref.topic.indexOf('://') + 3), 
+              persistent: ref.topic.startsWith('persistent'), 
+              stats: topicStats
+            }))
+        )
+      )
+
+      this.topics = this.topics.map((t, id) => ({ ...t, id }))
+
+      /*for (const ref of topicRefs) {
         const topicStats = await this.$pulsar.fetchTopicStats(ref.topic.replace(":/",""), ref.cluster)
         this.topics.push({
           id: this.topics.length,
@@ -263,7 +277,8 @@ export default {
           name: ref.topic.substring(ref.topic.indexOf('://') + 3), 
           persistent: ref.topic.startsWith('persistent'), 
           stats: topicStats })
-      }
+      }*/
+
       this.setTopics(this.topics)
 
       this.loading = false
