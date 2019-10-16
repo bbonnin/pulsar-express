@@ -7,8 +7,14 @@
         :data="namespaces"
         style="width: 100%">
         <el-table-column
+          fixed
+          label="Name"
           prop="namespace"
-          label="Name">
+          sortable
+          width="250">
+          <template slot-scope="scope">
+            <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.namespace }}</el-button>
+          </template>
         </el-table-column>
         <el-table-column
           prop="cluster.name"

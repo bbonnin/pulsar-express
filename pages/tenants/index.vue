@@ -7,6 +7,7 @@
         :data="tenants"
         style="width: 100%">
         <el-table-column
+          sortable
           prop="name"
           label="Name">
         </el-table-column>
