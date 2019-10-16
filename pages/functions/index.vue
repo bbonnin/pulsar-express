@@ -14,7 +14,9 @@
           sortable
           width="200">
           <template slot-scope="scope">
-            {{scope.row.infos.tenant}}/{{scope.row.infos.namespace}}/{{scope.row.infos.name}}
+            <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">
+              {{scope.row.infos.tenant}}/{{scope.row.infos.namespace}}/{{scope.row.infos.name}}
+            </el-button>
           </template>
         </el-table-column>
         <el-table-column
