@@ -3,8 +3,13 @@
     <breadcrumb :items="[ { path: '/clusters', label: cluster ? 'Cluster ' + cluster.name : 'All clusters' }, { label: 'Topics' } ]" />
     <loading v-if="loading" />
     <div v-else-if="topics.length > 0">
+      <el-form :inline="true">
+        <el-form-item label="Search topics" size="small">
+          <el-input v-model="search" placeholder="Type to search"></el-input>
+        </el-form-item>
+      </el-form>
       <el-table
-        :data="topics"
+        :data="topics.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
         style="width: 100%"
         height_="800"
         :default-sort = "{prop: 'name', order: 'ascending'}">
@@ -163,6 +168,7 @@ export default {
         ],
       },
       loading: false,
+      search: '',
       topics: []
     }
   },
