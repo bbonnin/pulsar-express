@@ -2,6 +2,15 @@
 
 (Almost) full release notes.
 
+## Release 0.5.1
+
+* Features:
+  * Filter topics
+  * Links in table (access details)
+* Fixes:
+  * Topics fetch parallelism
+
+
 ## Version 0.5.0
 
 * Features:
