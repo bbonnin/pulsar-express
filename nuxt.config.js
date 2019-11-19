@@ -51,9 +51,7 @@ export default {
   */
   modules: [
     // Doc: https://axios.nuxtjs.org/usage
-    ['@nuxtjs/axios', {
-      prefix: process.env.PE_BASE_URL || ''
-    }]
+    '@nuxtjs/axios',
   ],
 
   /*
@@ -79,10 +77,6 @@ export default {
       }
     }
   },*/
-
-  router: {
-    base: process.env.PE_BASE_URL || ''
-  },
 
   serverMiddleware: [
     __dirname + '/serverMiddleware/server-internal-api',

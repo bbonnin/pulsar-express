@@ -2,7 +2,7 @@
   <section class="container">
     <div>
       <div class="logo">
-        <img src="pulsar.svg"/>
+        <img src="/pulsar.svg"/>
       </div>
       <h1 class="title">EXPRESS</h1>
       <h2 class="subtitle">
