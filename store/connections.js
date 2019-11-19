@@ -24,7 +24,7 @@ export const mutations = {
 export const actions = {
   async fetchConnections({ commit }) {   
     const localConnections = await getConnections() // Defined by the user, stored in the browser
-    const sharedConnections = await getSharedConnections() // Configured on server-side, shared by all users
+    const sharedConnections = await getSharedConnections(this.$axios) // Configured on server-side, shared by all users
     commit('setSharedConnections', sharedConnections)
     commit('addConnections', localConnections)
   },

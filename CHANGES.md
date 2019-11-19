@@ -2,6 +2,12 @@
 
 (Almost) full release notes.
 
+## Relase 0.5.2
+
+* Features:
+  * Set a base URL
+
+
 ## Release 0.5.1
 
 * Features:
