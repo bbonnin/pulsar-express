@@ -1,6 +1,6 @@
 {
   "name": "pulsar-express",
-  "version": "0.5.2",
+  "version": "0.5.1",
   "description": "Simple Web Interface for Apache Pulsar",
   "keywords": [
     "apache pulsar",
