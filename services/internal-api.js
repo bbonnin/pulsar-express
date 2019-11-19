@@ -1,6 +1,4 @@
-import axios from 'axios'
-
-export async function getSharedConnections() {
+export async function getSharedConnections(axios) {
   try {
     const result = await axios.get('/api/connections')
     return result.data

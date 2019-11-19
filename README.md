@@ -75,6 +75,11 @@ export PE_CONNECTION_NAME=my-pulsar
 export PE_CONNECTION_TOKEN=<YOUR_TOKEN>
 ```
 
+* You can set a base URL by setting PE_BASE_URL
+```bash
+export PE_BASE_URL=/pe
+```
+
 From there, you can connect with your browser to the url above !
 
 ![Pulsar express home](docs/home.png)
