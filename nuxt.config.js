@@ -1,5 +1,8 @@
 import pkg from './package'
 
+let baseUrl = process.env.PE_BASE_URL || '/'
+baseUrl = baseUrl.startsWith('/') ? baseUrl : '/' + baseUrl
+
 export default {
   mode: 'spa',
 
@@ -7,6 +10,10 @@ export default {
 
   dir: {
     static: __dirname + '/static'
+  },
+
+  router: {
+    base: baseUrl
   },
 
   /*
@@ -20,7 +27,7 @@ export default {
       { hid: 'description', name: 'description', content: pkg.description }
     ],
     link: [
-      { rel: 'icon', type: 'image/x-icon', href: '/favicon.ico' }
+      { rel: 'icon', type: 'image/x-icon', href: 'favicon.ico' }
     ]
   },
 
@@ -60,7 +67,8 @@ export default {
   axios: {
     // See https://github.com/nuxt-community/axios-module#options
     debug: false,
-    proxy: true
+    proxy: true,
+    prefix: baseUrl
   },
 
   /*proxy: {
