@@ -1,7 +1,7 @@
 <template>
   <header class="navbar">
     <nuxt-link to="/overview">
-      <img alt="pulsar-logo" class="logo" src="pulsar.svg" />
+      <img alt="pulsar-logo" class="logo" src="~/assets/pulsar.svg" />
     </nuxt-link>
     <div class="links">
       <nav class="nav-links">

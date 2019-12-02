@@ -35,35 +35,35 @@
               type="plain" plain round
               size="mini"
               title="Brokers">
-              <img src="brokers.png" width="18" alt="Brokers"/>
+              <img src="~/assets/brokers.png" width="18" alt="Brokers"/>
             </el-button>
             <el-button
               @click.native.prevent="showItems(scope.row, '/tenants')"
               type="plain" plain round
               size="mini"
               title="Tenants">
-              <img src="tenants.png" width="18" alt="Tenants"/>
+              <img src="~/assets/tenants.png" width="18" alt="Tenants"/>
             </el-button>
             <el-button
               @click.native.prevent="showItems(scope.row, '/namespaces')"
               type="plain" plain round
               size="mini"
               title="Namespaces">
-              <img src="namespaces.png" width="18" alt="Namespaces"/>
+              <img src="~/assets/namespaces.png" width="18" alt="Namespaces"/>
             </el-button>
             <el-button
               @click.native.prevent="showItems(scope.row, '/topics')"
               type="plain" plain round
               size="mini"
               title="Topics">
-              <img src="topics.png" width="18" alt="Topics"/>
+              <img src="~/assets/topics.png" width="18" alt="Topics"/>
             </el-button>
             <el-button
               @click.native.prevent="showItems(scope.row, '/functions')"
               type="plain" plain round
               size="mini"
               title="Functions">
-              <img src="functions.png" width="18" alt="Functions"/>
+              <img src="~/assets/functions.png" width="18" alt="Functions"/>
             </el-button>
           </template>
         </el-table-column>

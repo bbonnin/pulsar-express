@@ -232,7 +232,10 @@ For Docker:
   * [ ] manage functions (deploy ? delete ? create ? simple python function for test purpose ?)
 * Connections
   * [x] update a connection
-
+* [ ] Manage base URL (with env var)
+  * Images (assets vs static)
+  * Pages (Config router) -> dynamic ? seems to be NO !
+  * API (config Axios)
 
 ## Misc
 
