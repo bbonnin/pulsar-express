@@ -22,8 +22,8 @@
     "build": "nuxt build",
     "start": "nuxt start",
     "generate": "nuxt generate",
-    "docker-build": "docker build -t pulsar-express .",
-    "docker-run": "docker run -it -p 3000:3000 -e PE_CONNECTION_URL=http://host.docker.internal:8080 pulsar-express"
+    "docker-build": "docker build --build-arg BASE_URL=${PE_BASE_URL} -t pulsar-express .",
+    "docker-run": "docker run -it -p 3000:3000 -e PE_CONNECTION_URL=http://host.docker.internal:8080 -e PE_BASE_URL=${PE_BASE_URL} pulsar-express"
   },
   "dependencies": {
     "@nuxtjs/axios": "^5.8.0",
