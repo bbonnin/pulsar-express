@@ -18,6 +18,7 @@ export default {
       const path = this.$route.path
       const idxSlash = path.indexOf('/', 1)
       return path.substring(1, idxSlash == -1 ? path.length : idxSlash)
+
     }
   }
 }
