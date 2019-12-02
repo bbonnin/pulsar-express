@@ -192,6 +192,17 @@ For Docker:
 * Publish: `docker push USER/pulsar-express:VERSION`
 
 
+## How-to
+
+* Change the base URL (work in progress, it's a quick fix):
+  * Set the base URL you want to use: `export PE_BASE_URL=pulsar-express`
+  * Rebuild the docker image: `npm run docker-build` (or `docker build --build-arg BASE_URL=${PE_BASE_URL} -t pulsar-express .`)
+  * Run the image, for example: `docker run -it -p 3000:3000 -e PE_CONNECTION_URL=http://host.docker.internal:8080 -e PE_BASE_URL=${PE_BASE_URL} pulsar-express`
+
+  > When running the image, do not forget to set PE_BASE_URL !
+
+
+
 ## To do
 
 > A lot of things of course :), but the main step is to change the architecture and add a backend instead of making the queries from the browser. This backend could provide api, cache, better management of configuration, ...
