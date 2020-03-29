@@ -69,6 +69,10 @@ app.all('/*', (req, res) => {
 
     // Adding header to all requests since function worker returns 500
     // without it on some endpoints
+    if (!reqOptions.headers) {
+      reqOptions.headers = {}
+    }
+
     reqOptions.headers['Accept'] = 'application/json'
 
     request(reqOptions)
