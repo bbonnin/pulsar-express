@@ -193,6 +193,8 @@ export default {
       }
 
       this.clusters = await this.$pulsar.fetchClusters(connections)
+      // Default to first clusters
+      this.newNamespace.cluster = this.clusters[0]
       const tenants = await this.$pulsar.fetchTenants(this.clusters)  
       this.namespaces = await this.$pulsar.fetchNamespaces(tenants)
 
