@@ -45,7 +45,9 @@ app.all('/*', (req, res) => {
 
     if (token) {
       reqOptions.headers = {
-        'Authorization': 'Bearer ' + token
+        // Adding a trim because tokens from k8s secrets
+        // can have trailing newlines
+        'Authorization': 'Bearer ' + token.trim()
       }
     }
 
@@ -57,6 +59,17 @@ app.all('/*', (req, res) => {
       }
       reqOptions.headers['Content-Type'] = 'application/json;charset=UTF-8'
     }
+
+    reqOptions.checkServerIdentity = (servername, cert) => {
+          // skip certificate hostname validation
+          // since inside k8s cluster it won't match
+          // if proxy is exposed on a public DNS name
+          return undefined;
+      }
+
+    // Adding header to all requests since function worker returns 500
+    // without it on some endpoints
+    reqOptions.headers['Accept'] = 'application/json'
 
     request(reqOptions)
       .on('error', function(err) {
