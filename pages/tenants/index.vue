@@ -129,6 +129,10 @@ export default {
       }
 
       this.clusters = await this.$pulsar.fetchClusters(connections)
+      
+      // Default the cluster to the first on the list
+      this.newTenant.cluster = this.clusters[0]
+      
       this.tenants = await this.$pulsar.fetchTenantsConfig(this.clusters)
 
       this.loading = false

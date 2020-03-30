@@ -257,6 +257,9 @@ export default {
       }
 
       this.clusters = await this.$pulsar.fetchClusters(connections)
+      // Default to the first cluster on the list
+      this.newTopic.cluster = this.clusters[0]
+      
       const topicRefs = await this.$pulsar.fetchTopics(this.clusters)
 
       this.topics = []

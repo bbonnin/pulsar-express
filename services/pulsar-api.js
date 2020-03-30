@@ -24,7 +24,7 @@ export default $axios => ({
   },
 
   async fetchFunction(fctName, cluster) {
-    return await $axios.$get('/api/admin/v3/functions/' + fctName + '?' + getServiceParams(cluster.connection, false)) // Does not work, if true
+    return await $axios.$get('/api/admin/v3/functions/' + fctName + '?' + getServiceParams(cluster.connection, true))
   },
 
   async fetchFunctionStatus(fctName, cluster) {
@@ -32,7 +32,8 @@ export default $axios => ({
   },
 
   async fetchFunctions(ns, cluster) {
-    return await $axios.$get('/api/admin/v3/functions/' + ns + '?' + getServiceParams(cluster.connection, false)) // Does not work, if true
+    // Using v2 API here because this endpoint is missing from V3 on function worker
+    return await $axios.$get('/api/admin/v2/functions/' + ns + '?' + getServiceParams(cluster.connection, true))
   },
 
   async fetchTopicStats(topic, cluster) {
@@ -59,8 +60,17 @@ export default $axios => ({
     return brokers
   },
 
-  checkBrokerHealth(brokerUrl) {
-    return $axios.$get('/api/admin/v2/brokers/health?u=http://' + brokerUrl)
+  checkBrokerHealth(brokerInfo) {
+    
+    const brokerUrl = brokerInfo.broker
+    const token = brokerInfo.cluster.connection.token
+    
+    let params = 'u=http://' + brokerUrl
+    if (token) {
+      params += '&t=' + token
+    }
+    
+    return $axios.$get('/api/admin/v2/brokers/health?' + params)
   },
 
   async fetchTenantsConfig(clusters) {

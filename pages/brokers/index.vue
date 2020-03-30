@@ -91,7 +91,7 @@ export default {
     },
 
     checkHealth(brokerInfo) {
-      this.$pulsar.checkBrokerHealth(brokerInfo.broker)
+      this.$pulsar.checkBrokerHealth(brokerInfo)
         .then((resp) => {
           const type = resp === 'ok' ? 'success' : 'info'
           this.$message({
