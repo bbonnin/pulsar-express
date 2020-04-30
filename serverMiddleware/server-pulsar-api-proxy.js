@@ -1,6 +1,12 @@
 const express = require('express')
 const request = require('request')
 const connections = require('./connections')
+const fs = require('fs')
+
+// Read client cert options
+ca = process.env.PE_CA_PATH ? fs.readFileSync(process.env.PE_CA_PATH) : null
+cert = process.env.PE_CERT_PATH ? fs.readFileSync(process.env.PE_CERT_PATH) : null
+key = process.env.PE_KEY_PATH ? fs.readFileSync(process.env.PE_KEY_PATH) : null
 
 const app = express()
 app.use(express.json())
@@ -74,6 +80,18 @@ app.all('/*', (req, res) => {
     }
 
     reqOptions.headers['Accept'] = 'application/json'
+
+    // CA is for self signed cert; it's optional
+    if (ca) {
+      reqOptions.ca = ca
+    }
+
+    // cert and key are both required to enable mutual TLS
+    // These are optional
+    if (cert && key) {
+      reqOptions.cert = cert
+      reqOptions.key = key
+    }
 
     request(reqOptions)
       .on('error', function(err) {
