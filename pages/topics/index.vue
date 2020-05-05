@@ -264,15 +264,23 @@ export default {
 
       this.topics = []
 
+      const topicWithStats = (ref, stats) => {
+        return {
+          cluster: ref.cluster,
+          name: ref.topic.substring(ref.topic.indexOf('://') + 3), 
+          persistent: ref.topic.startsWith('persistent'), 
+          stats: stats
+        }
+      }
+
       this.topics = await Promise.all(
         topicRefs.map(ref =>
           this.$pulsar.fetchTopicStats(ref.topic.replace(":/",""), ref.cluster)
-            .then((topicStats) => ({
-              cluster: ref.cluster,
-              name: ref.topic.substring(ref.topic.indexOf('://') + 3), 
-              persistent: ref.topic.startsWith('persistent'), 
-              stats: topicStats
-            }))
+            .then((topicStats) => topicWithStats(ref, topicStats))
+            .catch((e) => {
+              console.error(e);
+              return topicWithStats(ref, undefined);
+            })
         )
       )
 
