@@ -207,6 +207,8 @@ For Docker:
 
 > A lot of things of course :), but the main step is to change the architecture and add a backend instead of making the queries from the browser. This backend could provide api, cache, better management of configuration, ...
 
+* General:
+  * [ ] test with the latest version (2020/06/08 => v2.5.2)
 * Clusters
   * [x] connections to clusters (configured on server and client side)
   * [x] list clusters
