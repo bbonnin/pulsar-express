@@ -24,6 +24,12 @@
           <nuxt-link to="/functions">Functions</nuxt-link>
         </div>
         <div class="nav-item">
+          <nuxt-link to="/sinks">Sinks</nuxt-link>
+        </div>
+        <div class="nav-item">
+          <nuxt-link to="/sources">Sources</nuxt-link>
+        </div>
+        <div class="nav-item">
           <nuxt-link to="/connections">Connections</nuxt-link>
         </div>
       </nav>
@@ -32,9 +38,7 @@
 </template>
 
 <script>
-export default {
-
-}
+export default {};
 </script>
 
 <style scoped>
@@ -101,7 +105,9 @@ a {
   cursor: pointer;
 }
 
-.nav-item .nuxt-link-exact-active, .nav-item .nuxt-link-active, .nav-item a:hover {
+.nav-item .nuxt-link-exact-active,
+.nav-item .nuxt-link-active,
+.nav-item a:hover {
   margin-bottom: -2px;
   border-bottom: 2px solid #188fff;
 }
