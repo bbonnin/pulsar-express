@@ -50,7 +50,7 @@ export default $axios => ({
     for (const cluster of clusters) {
       try {
         const result = await $axios.$get('/api/admin/v2/brokers/' + cluster.name + '?' + getServiceParams(cluster.connection))
-        brokers = brokers.concat(result.map(broker => ({cluster, broker})))
+        brokers = brokers.concat(result.map(broker => ({ cluster, broker })))
       }
       catch (err) {
         console.error(err)
@@ -61,15 +61,15 @@ export default $axios => ({
   },
 
   checkBrokerHealth(brokerInfo) {
-    
+
     const brokerUrl = brokerInfo.broker
     const token = brokerInfo.cluster.connection.token
-    
+
     let params = 'u=http://' + brokerUrl
     if (token) {
       params += '&t=' + token
     }
-    
+
     return $axios.$get('/api/admin/v2/brokers/health?' + params)
   },
 
@@ -81,7 +81,7 @@ export default $axios => ({
     for (const tenant of tenants) {
       try {
         const cfg = await $axios.$get('/api/admin/v2/tenants/' + tenant.tenant + '?' + getServiceParams(tenant.cluster.connection))
-        tenantConfigs = tenantConfigs.concat({cluster: tenant.cluster, name: tenant.tenant, config: cfg})
+        tenantConfigs = tenantConfigs.concat({ cluster: tenant.cluster, name: tenant.tenant, config: cfg })
       }
       catch (err) {
         console.error(err)
@@ -97,7 +97,7 @@ export default $axios => ({
     for (const cluster of clusters) {
       try {
         const result = await $axios.$get('/api/admin/v2/tenants?' + getServiceParams(cluster.connection))
-        tenants = tenants.concat(result.map(tenant => ({cluster, tenant})))
+        tenants = tenants.concat(result.map(tenant => ({ cluster, tenant })))
       }
       catch (err) {
         console.error(err)
@@ -112,8 +112,8 @@ export default $axios => ({
   },
 
   createTenant(tenantName, cluster) {
-    return $axios.$put('/api/admin/v2/tenants/' + tenantName + '?' + getServiceParams(cluster.connection), 
-      { adminRoles: [], allowedClusters: [ cluster.name ] })
+    return $axios.$put('/api/admin/v2/tenants/' + tenantName + '?' + getServiceParams(cluster.connection),
+      { adminRoles: [], allowedClusters: [cluster.name] })
   },
 
   async fetchNamespaces(tenants) {
@@ -122,7 +122,7 @@ export default $axios => ({
     for (const tenant of tenants) {
       try {
         const result = await $axios.$get('/api/admin/v2/namespaces/' + tenant.tenant + '?' + getServiceParams(tenant.cluster.connection))
-        namespaces = namespaces.concat(result.map(namespace => ({cluster: tenant.cluster, namespace})))
+        namespaces = namespaces.concat(result.map(namespace => ({ cluster: tenant.cluster, namespace })))
       }
       catch (err) {
         console.error(err)
@@ -146,7 +146,7 @@ export default $axios => ({
     for (const ns of namespaces) {
       try {
         const result = await $axios.$get('/api/admin/v2/namespaces/' + ns.namespace + '/topics?' + getServiceParams(ns.cluster.connection))
-        topics = topics.concat(result.map(topic => ({cluster: ns.cluster, topic})))
+        topics = topics.concat(result.map(topic => ({ cluster: ns.cluster, topic })))
       }
       catch (err) {
         console.error(err)
@@ -157,9 +157,62 @@ export default $axios => ({
   },
 
   async fetchTopics(clusters) {
-    const tenants = await this.fetchTenants(clusters)  
+    const tenants = await this.fetchTenants(clusters)
     const namespaces = await this.fetchNamespaces(tenants)
     return await this.fetchTopicsNS(namespaces)
+  },
+
+  async fetchSinksNS(namespaces) {
+    let sinks = []
+
+    for (const ns of namespaces) {
+      try {
+        const result = await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection))
+        sinks = sinks.concat(result.map(sink => ({ cluster: ns.cluster, ns: ns, sink })))
+      }
+      catch (err) {
+        console.error(err)
+      }
+    }
+    return sinks
+  },
+
+  async fetchSinks(clusters) {
+    const tenants = await this.fetchTenants(clusters)
+    const namespaces = await this.fetchNamespaces(tenants)
+
+    return await this.fetchSinksNS(namespaces)
+  },
+
+  async fetchSink(sink, cluster, ns) {
+    return await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '?' + getServiceParams(cluster.connection))
+  },
+
+  async fetchSourcesNS(namespaces) {
+    let sources = []
+
+    for (const ns of namespaces) {
+      try {
+        const result = await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection))
+        sources = sources.concat(result.map(source => ({ cluster: ns.cluster,ns: ns, source })))
+      }
+      catch (err) {
+        console.error(err)
+      }
+    }
+
+    return sources
+  },
+
+  async fetchSources(clusters) {
+    const tenants = await this.fetchTenants(clusters)
+    const namespaces = await this.fetchNamespaces(tenants)
+
+    return await this.fetchSourcesNS(namespaces)
+  },
+
+  async fetchSource(source, cluster, ns) {
+    return await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '/' + source + '?' + getServiceParams(cluster.connection))
   },
 
   deleteTopic(topicName, cluster) {
@@ -180,7 +233,7 @@ export default $axios => ({
     for (const cluster of clusters) {
       try {
         const result = await $axios.$get('/api/admin/v2/brokers/' + cluster.name + '?' + getServiceParams(cluster.connection))
-        brokers = brokers.concat(result.map(broker => ({cluster, broker})))
+        brokers = brokers.concat(result.map(broker => ({ cluster, broker })))
       }
       catch (err) {
         console.error(err)
@@ -209,11 +262,12 @@ export default $axios => ({
       for (const cluster of clusters) {
         try {
           const clusterInfos = await $axios.$get('/api/admin/v2/clusters/' + cluster + '?' + getServiceParams(connections[idx]))
-          availableClusters.push({ 
-            name: cluster, 
-            serviceUrl: clusterInfos.serviceUrl, 
+          availableClusters.push({
+            name: cluster,
+            serviceUrl: clusterInfos.serviceUrl,
             brokerServiceUrl: clusterInfos.brokerServiceUrl,
-            connection: connections[idx] })
+            connection: connections[idx]
+          })
         }
         catch (err) {
           console.error(err)
@@ -226,10 +280,10 @@ export default $axios => ({
 
   updateClusterConfig(cluster) {
     return $axios.$post('/api/admin/v2/clusters/' + cluster.name + '?' + getServiceParams(cluster.connection),
-      { 
-        serviceUrl: cluster.serviceUrl, 
-        serviceUrlTls: cluster.serviceUrlTls, 
-        brokerServiceUrl: cluster.brokerServiceUrl, 
+      {
+        serviceUrl: cluster.serviceUrl,
+        serviceUrlTls: cluster.serviceUrlTls,
+        brokerServiceUrl: cluster.brokerServiceUrl,
         brokerServiceUrlTls: cluster.brokerServiceUrlTls
       })
   },

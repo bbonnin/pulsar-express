@@ -33,6 +33,22 @@ export const mutations = {
     state.topics = topics
   },
 
+  setSink(state, sink) {
+    state.sink = sink
+  },
+
+  setSinks(state, sinks) {
+    state.sinks = sinks
+  },
+
+  setSource(state, source) {
+    state.source = source
+  },
+
+  setSources(state, sources) {
+    state.sources = sources
+  },
+
   setCluster(state, cluster) {
     state.cluster = cluster
   }
@@ -61,6 +77,22 @@ export const actions = {
 
   async setTopics({ commit }, topics) {
     commit('setTopics', topics)
+  },
+
+  async setSinks({ commit }, sinks) {
+    commit('setSinks', sinks)
+  },
+
+  async setSink({ commit }, sink) {
+    commit('setSink', sink)
+  },
+
+  async setSources({ commit }, sources) {
+    commit('setSources', sources)
+  },
+
+  async setSource({ commit }, source) {
+    commit('setSource', source)
   },
 
   async setCluster({ commit }, cluster) {
