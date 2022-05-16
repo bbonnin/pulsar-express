@@ -167,7 +167,7 @@ export default $axios => ({
 
     for (const ns of namespaces) {
       try {
-        const result = await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection))
+        const result = await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection, true))
         sinks = sinks.concat(result.map(sink => ({ cluster: ns.cluster, ns: ns, sink })))
       }
       catch (err) {
@@ -185,7 +185,7 @@ export default $axios => ({
   },
 
   async fetchSink(sink, cluster, ns) {
-    return await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '?' + getServiceParams(cluster.connection, true))
   },
 
   async fetchSourcesNS(namespaces) {
@@ -193,7 +193,7 @@ export default $axios => ({
 
     for (const ns of namespaces) {
       try {
-        const result = await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection))
+        const result = await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection, true))
         sources = sources.concat(result.map(source => ({ cluster: ns.cluster,ns: ns, source })))
       }
       catch (err) {
@@ -212,7 +212,7 @@ export default $axios => ({
   },
 
   async fetchSource(source, cluster, ns) {
-    return await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '/' + source + '?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '/' + source + '?' + getServiceParams(cluster.connection, true))
   },
 
   deleteTopic(topicName, cluster) {
