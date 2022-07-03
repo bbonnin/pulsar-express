@@ -249,7 +249,7 @@ export default {
 
     showDetails(id) {
       const topic = this.topics[id]
-      this.$router.push({ path: '/topics/' + topic.cluster.name + '/' + topic.persistent + '/' + topic.name })
+      this.$router.push({ path: '/topics/' + topic.cluster.name + '/' + (topic.persistent ? 'persistent' : 'non-persistent') + '/' + topic.name })
     },
 
     async reload() {
