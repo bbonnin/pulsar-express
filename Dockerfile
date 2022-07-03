@@ -7,9 +7,13 @@ ENV APP_ROOT /app
 
 RUN mkdir ${APP_ROOT}
 WORKDIR ${APP_ROOT}
+
+ADD ./package.json ${APP_ROOT}/package.json
+ADD ./package-lock.json ${APP_ROOT}/package-lock.json
+RUN npm install
+
 ADD . ${APP_ROOT}
 
-RUN npm install
 RUN npm run build
 
 EXPOSE 3000
