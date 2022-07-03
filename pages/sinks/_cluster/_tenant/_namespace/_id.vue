@@ -71,9 +71,37 @@ export default {
   methods: {
     cellFormatFloat,
     cellFormatBoolean,
+    
+    ...mapActions('context', ['setSink', 'setSinks']),
 
     async reload() {
-      this.policies = await this.$pulsar.fetchSink(this.currentSink.sink, this.currentSink.cluster, this.currentSink.ns)
+      let connections = []
+
+      if (this.cluster) {
+        connections.push(this.cluster.connection)
+      }
+      else {
+        await this.$store.dispatch('connections/fetchConnections')
+        connections = this.$store.state.connections.connections
+      }
+
+      this.clusters = await this.$pulsar.fetchClusters(connections)
+      const cluster = this.clusters.find(c => c.name == this.$route.params.cluster)
+      
+      this.sinks = [
+        {
+          cluster: cluster,
+          ns: {cluster: cluster, namespace: this.$route.params.tenant + '/' + this.$route.params.namespace},
+          sink: this.$route.params.id
+        }
+      ]
+      console.log(this.sinks)
+      this.setSinks([1])
+      this.setSink(0)
+      console.log(this.sinks)
+      console.log(this.sink)
+      
+      this.policies = await this.$pulsar.fetchSink(this.currentSink.sink, cluster, this.currentSink.ns)
     }
   },
 

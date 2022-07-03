@@ -13,7 +13,9 @@
           sortable
           width="250">
           <template slot-scope="scope">
-            <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.sink }}</el-button>
+            <a :href="`/sinks/${scope.row.cluster.name}/${scope.row.ns.namespace}/${scope.row.sink}`">
+              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.sink }}</el-button>
+            </a>
           </template>
         </el-table-column>
         <el-table-column
@@ -106,7 +108,8 @@ export default {
 
     showDetails(id) {
       this.setSink(id)
-      this.$router.push({ path: '/sinks/' + id })
+      const sink = this.sinks[id]
+      this.$router.push({ path: '/sinks/' + sink.cluster.name + '/' + sink.ns.namespace + '/' + sink.sink })
     },
   },
 
