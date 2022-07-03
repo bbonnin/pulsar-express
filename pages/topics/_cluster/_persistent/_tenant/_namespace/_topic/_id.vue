@@ -273,20 +273,44 @@ export default {
   },
 
   mounted() {
-    if (this.currentTopic) {
-      this.reload()
-    }
+    this.reload()
   },
 
   methods: {
     cellFormatFloat,
     cellFormatBytesToBestUnit,
     cellFormatDateSince,
+    
+    ...mapActions('context', ['setTopic', 'setTopics']),
 
     async reload() {
       this.loading = true
-      const persist = this.currentTopic.persistent ? "persistent" : "non-persistent"
-      this.stats = await this.$pulsar.fetchTopicStats(persist + '/' + this.currentTopic.name, this.currentTopic.cluster)
+      let connections = []
+
+      if (this.cluster) {
+        connections.push(this.cluster.connection)
+      }
+      else {
+        await this.$store.dispatch('connections/fetchConnections')
+        connections = this.$store.state.connections.connections
+      }
+
+      this.clusters = await this.$pulsar.fetchClusters(connections)
+      const cluster = this.clusters.find(c => c.name == this.$route.params.cluster)
+      
+      const topicName = this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic;
+
+      this.setTopics([
+        {
+          cluster: cluster,
+          name: this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic, 
+          persistent: this.$route.params.persistent, 
+          stats: await this.$pulsar.fetchTopicStats(this.$route.params.persistent + '/' + topicName, cluster)
+        }
+      ])
+      this.setTopic(0)
+      this.stats = this.currentTopic.stats
+      
       this.loading = false
     },
 

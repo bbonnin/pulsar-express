@@ -20,11 +20,14 @@
           sortable
           width="300">
           <template slot-scope="scope">
-            <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.name }}</el-button>
+            <a :href="`/topics/${scope.row.cluster.name}/${scope.row.persistent ? 'persistent' : 'non-persistent'}/${scope.row.name}`">
+              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.name }}</el-button>
+            </a>
           </template>
         </el-table-column>
         <el-table-column
           label="Persistent"
+          sortable
           width="100">
           <template slot-scope="scope">
             <i class="el-icon-check" v-if="scope.row.persistent"></i>
@@ -33,26 +36,31 @@
         <el-table-column
           prop="stats.msgRateIn"
           label="Msg/s in"
+          sortable
           :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
           prop="stats.msgRateOut"
           label="Msg/s out"
+          sortable
           :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
           prop="stats.msgThroughputIn"
           label="Byte/s in"
+          sortable
           :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
           prop="stats.msgThroughputOut"
           label="Byte/s out"
+          sortable
           :formatter="cellFormatFloat">
         </el-table-column>
         <el-table-column
           prop="stats.storageSize"
           label="Storage size"
+          sortable
           :formatter="cellFormatBytesToBestUnit">
         </el-table-column>
         <el-table-column
@@ -240,8 +248,8 @@ export default {
     },
 
     showDetails(id) {
-      this.setTopic(id)
-      this.$router.push({ path: '/topics/' + id })
+      const topic = this.topics[id]
+      this.$router.push({ path: '/topics/' + topic.cluster.name + '/' + topic.persistent + '/' + topic.name })
     },
 
     async reload() {
