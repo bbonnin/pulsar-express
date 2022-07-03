@@ -7,7 +7,7 @@
         :data="functions"
         style="width: 100%"
         height_="800"
-        :default-sort = "{prop: 'name', order: 'ascending'}">
+        :default-sort = "{prop: 'status.numRunning', order: 'ascending'}">
         <el-table-column
           fixed
           label="Name"
@@ -25,6 +25,19 @@
           prop="infos.runtime"
           label="Runtime"
           width="100">
+        </el-table-column>
+        <el-table-column
+          prop="status.numRunning"
+          label="Running"
+          sortable
+          width="100">
+          <template slot-scope="scope">
+            <el-tag
+                :type="scope.row.status.numRunning >= scope.row.status.numInstances ? 'success' : scope.row.status.numRunning <= 0 ? 'danger' : 'warning'"
+                disable-transitions>
+                {{scope.row.status.numRunning}}/{{scope.row.status.numInstances}}
+            </el-tag>
+          </template>
         </el-table-column>
         <el-table-column
           label="Class name">
@@ -177,10 +190,12 @@ export default {
       for (const functions of functionsByNs) {
         for (const fctName of functions.names) {
           const fctSInfos = await this.$pulsar.fetchFunction(functions.namespace + '/' + fctName, functions.cluster)
+          const fctStatus = await this.$pulsar.fetchFunctionStatus(functions.namespace + '/' + fctName, functions.cluster)
           this.functions.push({
             id: this.functions.length,
             cluster: functions.cluster,
-            infos: fctSInfos })
+            infos: fctSInfos,
+            status: fctStatus })
         }
       }
 

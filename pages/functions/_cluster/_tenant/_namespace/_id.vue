@@ -223,7 +223,6 @@ export default {
     
       const status = await this.$pulsar.fetchFunctionStatus(this.fullname, this.currentFunction.cluster)
       this.instances = status.instances
-      console.log(status)
     },
 
     stopAllInstances() {
