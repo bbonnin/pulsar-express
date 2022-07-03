@@ -84,7 +84,8 @@
             <template slot-scope="scope">
               <el-tag
                 :type="scope.row.status.running ? 'success' : 'warning'"
-                disable-transitions>{{scope.row.status.running ? 'Yes' : 'No'}}</el-tag>
+                disable-transitions
+                :title="scope.row.status.error">{{scope.row.status.running ? 'Yes' : 'No'}}</el-tag>
             </template>
           </el-table-column>
           <el-table-column
@@ -193,8 +194,33 @@ export default {
     getSimpleTopicName,
     cellFormatBoolean,
     shortClassName,
+    
+    ...mapActions('context', ['setFunction', 'setFunctions']),
 
     async reload() {
+      let connections = []
+
+      if (this.cluster) {
+        connections.push(this.cluster.connection)
+      }
+      else {
+        await this.$store.dispatch('connections/fetchConnections')
+        connections = this.$store.state.connections.connections
+      }
+
+      this.clusters = await this.$pulsar.fetchClusters(connections)
+      const cluster = this.clusters.find(c => c.name == this.$route.params.cluster)
+      
+      const fctSInfos = await this.$pulsar.fetchFunction(this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.id, cluster)
+      
+      this.setFunctions([
+        {
+            cluster: cluster,
+            infos: fctSInfos
+        }
+      ])
+      this.setFunction(0)
+    
       const status = await this.$pulsar.fetchFunctionStatus(this.fullname, this.currentFunction.cluster)
       this.instances = status.instances
       console.log(status)

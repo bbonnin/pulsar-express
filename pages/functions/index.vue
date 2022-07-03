@@ -14,9 +14,11 @@
           sortable
           width="200">
           <template slot-scope="scope">
-            <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">
-              {{scope.row.infos.tenant}}/{{scope.row.infos.namespace}}/{{scope.row.infos.name}}
-            </el-button>
+            <a :href="`/functions/${scope.row.cluster.name}/${scope.row.infos.tenant}/${scope.row.infos.namespace}/${scope.row.infos.name}`">
+              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">
+                {{scope.row.infos.tenant}}/{{scope.row.infos.namespace}}/{{scope.row.infos.name}}
+              </el-button>
+            </a>
           </template>
         </el-table-column>
         <el-table-column
@@ -129,8 +131,8 @@ export default {
     },
 
     showDetails(id) {
-      this.setFunction(id)
-      this.$router.push({ path: '/functions/' + id })
+      const func = this.functions[id]
+      this.$router.push({ path: '/functions/' + func.cluster.name + '/' + func.infos.tenant + '/' + func.infos.namespace + '/' + func.infos.name })
     },
 
     async reload() {
