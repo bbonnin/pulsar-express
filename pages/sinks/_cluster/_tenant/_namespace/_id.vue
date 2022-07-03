@@ -11,6 +11,65 @@
       <div class="button-bar">
         <el-button @click="reload()">Reload</el-button>
       </div>
+      
+      <h3>Instances</h3>
+      <div v-if="instances.length > 0">
+        <el-table
+          :data="instances"
+          style="width: 100%">
+          <el-table-column
+            prop="instanceId"
+            label="Id"
+            width="100">
+          </el-table-column>
+          <el-table-column
+            prop="status.workerId"
+            label="Worker">
+          </el-table-column>
+          <el-table-column
+            prop="status.running"
+            label="Running">
+            <template slot-scope="scope">
+              <el-tag
+                :type="scope.row.status.running ? 'success' : 'warning'"
+                disable-transitions
+                :title="scope.row.status.error">{{scope.row.status.running ? 'Yes' : 'No'}}</el-tag>
+            </template>
+          </el-table-column>
+          <el-table-column
+            prop="status.numReadFromPulsar"
+            label="Read">
+          </el-table-column>
+          <el-table-column
+            prop="status.numWrittenToSink"
+            label="Written">
+          </el-table-column>
+          <el-table-column
+            prop="status.lastReceivedTime"
+            label="Last received">
+          </el-table-column>
+          <el-table-column
+            prop="status.numRestarts"
+            label="Restarts">
+          </el-table-column>
+          <el-table-column
+            prop="status.numSystemExceptions"
+            label="System exc.">
+          </el-table-column>
+          <el-table-column
+            prop="status.numSinkExceptions"
+            label="Sink exc.">
+          </el-table-column>
+        </el-table>
+      </div>
+      <p v-else class="simple-msg">
+        No instance.
+      </p>
+      <div class="button-bar">
+        <el-button @click="reload()">Reload</el-button>
+        <el-button type="success" @click="startAllInstances()">Start all instances</el-button>
+        <el-button type="warning" @click="stopAllInstances()">Stop all instances</el-button>
+      </div>
     </div>
     <div v-else>
       <el-alert
@@ -40,7 +99,8 @@ export default {
 
   data() {
     return {
-      policies: []
+      policies: [],
+      instances: []
     }
   },
 
@@ -73,6 +133,40 @@ export default {
     cellFormatBoolean,
     
     ...mapActions('context', ['setSink', 'setSinks']),
+    
+    stopAllInstances() {
+      this.$pulsar.startStopSinkInstances('stop', this.currentSink.sink, this.currentSink.cluster, this.currentSink.ns)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Stop completed'
+          })
+          setTimeout(this.reload, 1000)
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Stop error: ' + err
+          })
+        })
+    },
+
+    startAllInstances() {
+      this.$pulsar.startStopSinkInstances('start', this.currentSink.sink, this.currentSink.cluster, this.currentSink.ns)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Start completed'
+          })
+          setTimeout(this.reload, 1000)
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Start error: ' + err
+          })
+        })
+    },
 
     async reload() {
       let connections = []
@@ -88,19 +182,15 @@ export default {
       this.clusters = await this.$pulsar.fetchClusters(connections)
       const cluster = this.clusters.find(c => c.name == this.$route.params.cluster)
       
-      this.sinks = [
-        {
-          cluster: cluster,
-          ns: {cluster: cluster, namespace: this.$route.params.tenant + '/' + this.$route.params.namespace},
-          sink: this.$route.params.id
-        }
-      ]
-      console.log(this.sinks)
-      this.setSinks([1])
+      this.setSinks([{
+        cluster: cluster,
+        ns: {cluster: cluster, namespace: this.$route.params.tenant + '/' + this.$route.params.namespace},
+        sink: this.$route.params.id
+      }])
       this.setSink(0)
-      console.log(this.sinks)
-      console.log(this.sink)
       
+      const status = await this.$pulsar.fetchSinkStatus(this.currentSink.sink, cluster, this.currentSink.ns)
+      this.instances = status.instances
       this.policies = await this.$pulsar.fetchSink(this.currentSink.sink, cluster, this.currentSink.ns)
     }
   },
