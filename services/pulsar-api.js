@@ -321,4 +321,20 @@ export default $axios => ({
         brokerServiceUrlTls: cluster.brokerServiceUrlTls
       })
   },
+  
+  async fetchWorkers(clusters) {
+    let workers = []
+
+    for (const cluster of clusters) {
+      try {
+        const result = await $axios.$get('/api/admin/v2/worker/cluster?' + getServiceParams(cluster.connection))
+        workers = workers.concat(result.map(worker => ({ cluster, worker })))
+      }
+      catch (err) {
+        console.error(err)
+      }
+    }
+
+    return workers
+  },
 })

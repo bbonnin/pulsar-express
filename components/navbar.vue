@@ -12,6 +12,9 @@
           <nuxt-link to="/brokers">Brokers</nuxt-link>
         </div>
         <div class="nav-item">
+          <nuxt-link to="/brokers">Workers</nuxt-link>
+        </div>
+        <div class="nav-item">
           <nuxt-link to="/tenants">Tenants</nuxt-link>
         </div>
         <div class="nav-item">
