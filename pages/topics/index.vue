@@ -9,18 +9,18 @@
         </el-form-item>
       </el-form>
       <el-table
-        :data="topics.filter(data => !search || data.name.toLowerCase().includes(search.toLowerCase()))"
+        :data="topicData"
         style="width: 100%"
-        height_="800"
-        :default-sort = "{prop: 'name', order: 'ascending'}">
+        height_="800">
         <el-table-column
           fixed
           prop="name"
           label="Name"
-          sortable
           width="300">
           <template slot-scope="scope">
-            <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.name }}</el-button>
+            <a :href="`/topics/${scope.row.cluster.name}/${scope.row.persistent ? 'persistent' : 'non-persistent'}/${scope.row.name}`">
+              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.name }}</el-button>
+            </a>
           </template>
         </el-table-column>
         <el-table-column
@@ -75,6 +75,18 @@
           </template>
         </el-table-column>
       </el-table>
+      
+      <br />
+      
+      <div style="text-align: center">
+          <el-pagination
+              background
+              layout="prev, pager, next"
+              @current-change="handlePageChange"
+              :page-size="pageSize"
+              :total="total">
+          </el-pagination>
+      </div>
     </div>
     <div v-else>
       <el-alert
@@ -169,11 +181,29 @@ export default {
       },
       loading: false,
       search: '',
-      topics: []
+      topics: [],
+      page: 1,
+      pageSize: 30,
+      total: 0,
+      filtered: []
     }
   },
 
-  computed: mapState('context', ['cluster']),
+  computed: {
+    ...mapState('context', ['cluster']),
+    
+    topicData() {
+        if(this.search == null) return this.topics;
+      
+        this.filtered = this.topics.filter(data => !this.search || data.name.toLowerCase().includes(this.search.toLowerCase()));
+        
+        this.total = this.filtered.length;
+        
+        this.page = Math.min(this.page, Math.ceil(this.total / this.pageSize))
+
+        return this.filtered.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page);
+    }
+  },
 
   mounted() {
     this.reload()
@@ -240,8 +270,8 @@ export default {
     },
 
     showDetails(id) {
-      this.setTopic(id)
-      this.$router.push({ path: '/topics/' + id })
+      const topic = this.topics[id]
+      this.$router.push({ path: '/topics/' + topic.cluster.name + '/' + (topic.persistent ? 'persistent' : 'non-persistent') + '/' + topic.name })
     },
 
     async reload() {
@@ -299,7 +329,11 @@ export default {
       this.setTopics(this.topics)
 
       this.loading = false
-    }
+    },
+    
+    handlePageChange(val) {
+        this.page = val;
+    },
   },
 
   head() {

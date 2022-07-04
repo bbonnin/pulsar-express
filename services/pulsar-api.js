@@ -167,7 +167,7 @@ export default $axios => ({
 
     for (const ns of namespaces) {
       try {
-        const result = await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection))
+        const result = await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection, true))
         sinks = sinks.concat(result.map(sink => ({ cluster: ns.cluster, ns: ns, sink })))
       }
       catch (err) {
@@ -185,7 +185,15 @@ export default $axios => ({
   },
 
   async fetchSink(sink, cluster, ns) {
-    return await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '?' + getServiceParams(cluster.connection, true))
+  },
+  
+  async fetchSinkStatus(sink, cluster, ns) {
+    return await $axios.$get('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '/status?' + getServiceParams(cluster.connection, true))
+  },
+  
+  async startStopSinkInstances(action, sink, cluster, ns) {
+    return await $axios.$post('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '/' + action + '?' + getServiceParams(cluster.connection, true))
   },
 
   async fetchSourcesNS(namespaces) {
@@ -193,7 +201,7 @@ export default $axios => ({
 
     for (const ns of namespaces) {
       try {
-        const result = await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection))
+        const result = await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection, true))
         sources = sources.concat(result.map(source => ({ cluster: ns.cluster,ns: ns, source })))
       }
       catch (err) {
@@ -212,7 +220,7 @@ export default $axios => ({
   },
 
   async fetchSource(source, cluster, ns) {
-    return await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '/' + source + '?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '/' + source + '?' + getServiceParams(cluster.connection, true))
   },
 
   deleteTopic(topicName, cluster) {
@@ -224,7 +232,33 @@ export default $axios => ({
   },
 
   peekMessages(topicName, subName, count, cluster) {
-    return $axios.get('/api/admin/v2/' + topicName + '/subscription/' + subName + '/position/' + count + '?' + getServiceParams(cluster.connection))
+    return $axios.get('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '/position/' + count + '?' + getServiceParams(cluster.connection))
+  },
+  
+  async getLastCommitMessages(topicName, cluster) {
+    const lastCommitMessage = await $axios.$get('/api/admin/v2/' + topicName + '/lastMessageId?' + getServiceParams(cluster.connection))
+    if (lastCommitMessage) {
+        return {
+            ...lastCommitMessage,
+            payload: await $axios.$get('/api/admin/v2/' + topicName + '/ledger/' + lastCommitMessage.ledgerId + '/entry/' + lastCommitMessage.entryId + '?' + getServiceParams(cluster.connection))
+        }
+    }
+    return null;
+  },
+  
+  async getMessagesPublishedJustAfterTimestamp(topicName, timestamp, cluster) {
+    const publishedMessage = await $axios.$get('/api/admin/v2/' + topicName + '/messageid/' + timestamp + '?' + getServiceParams(cluster.connection))
+    if (publishedMessage) {
+        return {
+            ...publishedMessage, 
+            payload: await $axios.$get('/api/admin/v2/' + topicName + '/ledger/' + publishedMessage.ledgerId + '/entry/' + publishedMessage.entryId + '?' + getServiceParams(cluster.connection))
+        }
+    }
+    return null;
+  },
+  
+  async resetSubscription(topicName, subName, timestamp, cluster) {
+    return await $axios.$post('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '/resetcursor/' + timestamp + '?' + getServiceParams(cluster.connection))
   },
 
   async fetchBrokers(clusters) {
@@ -286,5 +320,25 @@ export default $axios => ({
         brokerServiceUrl: cluster.brokerServiceUrl,
         brokerServiceUrlTls: cluster.brokerServiceUrlTls
       })
+  },
+  
+  async fetchWorkers(clusters) {
+    let workers = []
+
+    for (const cluster of clusters) {
+      try {
+        const result = await $axios.$get('/api/admin/v2/worker/cluster?' + getServiceParams(cluster.connection))
+        workers = workers.concat(result.map(worker => ({ cluster, worker })))
+      }
+      catch (err) {
+        console.error(err)
+      }
+    }
+
+    return workers
+  },
+  
+  async rebalanceWorkers(cluster) {
+    return await $axios.$put('/api/admin/v2/worker/rebalance?' + getServiceParams(cluster.connection))
   },
 })

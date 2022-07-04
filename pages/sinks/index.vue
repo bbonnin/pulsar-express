@@ -5,15 +5,48 @@
     <div v-else-if="sinks.length > 0">
       <el-table
         :data="sinks"
-        style="width: 100%">
+        style="width: 100%"
+        :default-sort = "{prop: 'status.numRunning', order: 'ascending'}">
         <el-table-column
           fixed
           label="Name"
           prop="sink"
-          sortable
-          width="250">
+          sortable>
           <template slot-scope="scope">
-            <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.sink }}</el-button>
+            <a :href="`/sinks/${scope.row.cluster.name}/${scope.row.ns.namespace}/${scope.row.sink}`">
+              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.sink }}</el-button>
+            </a>
+          </template>
+        </el-table-column>
+        <el-table-column
+          prop="status.numRunning"
+          label="Running"
+          sortable
+          width="100">
+          <template slot-scope="scope">
+            <el-tag
+                :type="scope.row.status.numRunning >= scope.row.status.numInstances ? 'success' : scope.row.status.numRunning <= 0 ? 'danger' : 'warning'"
+                disable-transitions>
+                {{scope.row.status.numRunning}}/{{scope.row.status.numInstances}}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Read/Written">
+          <template slot-scope="scope">
+            {{scope.row.status.instances.reduce((r, d) => r + d.status.numReadFromPulsar, 0)}}/{{scope.row.status.instances.reduce((r, d) => r + d.status.numWrittenToSink, 0)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Restarts">
+          <template slot-scope="scope">
+            {{scope.row.status.instances.reduce((r, d) => r + d.status.numRestarts, 0)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Last received">
+          <template slot-scope="scope">
+            {{new Date(scope.row.status.instances.reduce((r, d) => Math.max(r, d.status.lastReceivedTime), 0)).toLocaleDateString('en-us', { month:"short", day:"numeric", hour:"numeric", minute:"numeric", second:"numeric"})}}
           </template>
         </el-table-column>
         <el-table-column
@@ -96,9 +129,16 @@ export default {
 
       this.clusters = await this.$pulsar.fetchClusters(connections)
 
-      this.sinks = await this.$pulsar.fetchSinks(this.clusters)
-
-      this.sinks = this.sinks.map((ns, idx) => ({ ...ns, id: idx }))
+      this.sinks = []
+      let sinks = await this.$pulsar.fetchSinks(this.clusters)
+      
+      for(const el of sinks) {
+        const sinkStatus = await this.$pulsar.fetchSinkStatus(el.sink, el.cluster, el.ns)
+        this.sinks.push({ ...el, 
+            id: this.sinks.length,
+            status: sinkStatus
+        })
+      }
       this.setSinks(this.sinks)
 
       this.loading = false
@@ -106,7 +146,8 @@ export default {
 
     showDetails(id) {
       this.setSink(id)
-      this.$router.push({ path: '/sinks/' + id })
+      const sink = this.sinks[id]
+      this.$router.push({ path: '/sinks/' + sink.cluster.name + '/' + sink.ns.namespace + '/' + sink.sink })
     },
   },
 

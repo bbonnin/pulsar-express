@@ -137,6 +137,9 @@
           </el-button>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="peekMessages">Peek messages</el-dropdown-item>
+            <el-dropdown-item command="getLastCommitMessage">Get last commit msg</el-dropdown-item>
+            <el-dropdown-item command="getPublishedMessageJustAfter">Get published msg just after a timestamp</el-dropdown-item>
+            <el-dropdown-item command="resetSubscription">Reset subscription</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
         <el-button @click="reload()">Reload</el-button>
@@ -151,7 +154,7 @@
       </el-alert>
     </div>
 
-    <el-dialog title="Peek messages" :visible.sync="peekMessagesVisible" fullscreen>
+    <el-dialog title="Peek messages" :visible.sync="peekMessagesVisible">
       <el-form ref="peekMsgForm" :model="peekMessagesInfo" :rules="peekMsgRules" label-width="200px">
         <el-form-item label="Subscription" prop="subscription">
           <el-select v-model="peekMessagesInfo.subscription" placeholder="Please select a subscription">
@@ -164,6 +167,79 @@
         <el-form-item>
           <el-button type="primary" @click="peekMessages('peekMsgForm')">Peek messages</el-button>
           <el-button @click="peekMessagesVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+      <div>
+        <el-table
+          v-if="lastMessages.length > 0"
+          :data="lastMessages"
+          style="width: 100%"
+          height="65vh">
+          <el-table-column
+            sortable
+            width="300"
+            prop="publishTime"
+            label="Publish Time">
+          </el-table-column>
+          <el-table-column
+            prop="text"
+            label="Message as text">
+          </el-table-column>
+          
+        </el-table>
+      </div>
+    </el-dialog>
+    
+    <el-dialog title="Last commit message" :visible.sync="lastCommitMessagesVisible">
+      <div>
+        <div v-if="lastCommitMessage">
+            <span>{{lastCommitMessage}}</span>
+        </div>
+        <br />
+        <el-button @click="lastCommitMessagesVisible = false">Close</el-button>
+      </div>
+    </el-dialog>
+    
+    <el-dialog title="Published message just after timestamp" :visible.sync="publishedMessageJustAfterTimestampVisible">
+      <el-form ref="publishedMsgJustAfterForm" :model="publishedMsgJustAfterInfo" :rules="publishedMsgJustAfterRules" label-width="200px">
+        <el-form-item label="Timestamp" prop="timestamp">
+          <el-date-picker
+            v-model="publishedMsgJustAfterInfo.timestamp"
+            type="datetime"
+            placeholder="Pick a Date"
+            format="yyyy/MM/DD hh:mm:ss"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="getPublishedMessageJustAfter('publishedMsgJustAfterForm')">Get message</el-button>
+          <el-button @click="publishedMessageJustAfterTimestampVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+      <div>
+        <div v-if="publishedMessageJustAfterTimestamp">
+            <span>{{publishedMessageJustAfterTimestamp}}</span>
+        </div>
+      </div>
+    </el-dialog>
+    
+    <el-dialog title="Reset subscription" :visible.sync="resetSubscriptionVisible">
+      <el-form ref="resetSubscriptionForm" :model="resetSubscriptionInfo" :rules="resetSubscriptionRules" label-width="200px">
+        <el-form-item label="Subscription" prop="subscription">
+          <el-select v-model="resetSubscriptionInfo.subscription" placeholder="Please select a subscription">
+            <el-option v-for="sub in subscriptions" :key="sub.name" :label="sub.name" :value="sub.name"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Timestamp" prop="timestamp">
+          <el-date-picker
+            v-model="resetSubscriptionInfo.timestamp"
+            type="datetime"
+            placeholder="Pick a Date"
+            format="yyyy/MM/DD hh:mm:ss"
+          />
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="resetSubscription('resetSubscriptionForm')">Reset subscription</el-button>
+          <el-button @click="resetSubscriptionVisible = false">Close</el-button>
         </el-form-item>
       </el-form>
       <div>
@@ -229,7 +305,29 @@ export default {
             }
           }
         ]
-      }
+      },
+      lastCommitMessage: '',
+      lastCommitMessagesVisible: false,
+      publishedMsgJustAfterInfo: {
+        timestamp: new Date()
+      },
+      publishedMsgJustAfterRules: {
+        timestamp: [
+          { required: true, message: 'Please select a timestamp', trigger: 'change' }
+        ]
+      },
+      publishedMessageJustAfterTimestamp: '',
+      publishedMessageJustAfterTimestampVisible: false,
+      resetSubscriptionInfo: {
+        timestamp: new Date(),
+        subscription: ''
+      },
+      resetSubscriptionRules: {
+        subscription: [
+          { required: true, message: 'Please select a subscription', trigger: 'change' }
+        ]
+      },
+      resetSubscriptionVisible: false
     }
   },
 
@@ -273,20 +371,44 @@ export default {
   },
 
   mounted() {
-    if (this.currentTopic) {
-      this.reload()
-    }
+    this.reload()
   },
 
   methods: {
     cellFormatFloat,
     cellFormatBytesToBestUnit,
     cellFormatDateSince,
+    
+    ...mapActions('context', ['setTopic', 'setTopics']),
 
     async reload() {
       this.loading = true
-      const persist = this.currentTopic.persistent ? "persistent" : "non-persistent"
-      this.stats = await this.$pulsar.fetchTopicStats(persist + '/' + this.currentTopic.name, this.currentTopic.cluster)
+      let connections = []
+
+      if (this.cluster) {
+        connections.push(this.cluster.connection)
+      }
+      else {
+        await this.$store.dispatch('connections/fetchConnections')
+        connections = this.$store.state.connections.connections
+      }
+
+      this.clusters = await this.$pulsar.fetchClusters(connections)
+      const cluster = this.clusters.find(c => c.name == this.$route.params.cluster)
+      
+      const topicName = this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic;
+
+      this.setTopics([
+        {
+          cluster: cluster,
+          name: this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic, 
+          persistent: this.$route.params.persistent == 'persistent', 
+          stats: await this.$pulsar.fetchTopicStats(this.$route.params.persistent + '/' + topicName, cluster)
+        }
+      ])
+      this.setTopic(0)
+      this.stats = this.currentTopic.stats
+      
       this.loading = false
     },
 
@@ -294,6 +416,16 @@ export default {
       switch (action) {
         case 'peekMessages':
           this.peekMessagesVisible = true
+          break
+        case 'getLastCommitMessage':
+          this.getLastCommitMessage()
+          this.lastCommitMessagesVisible = true
+          break
+        case 'getPublishedMessageJustAfter':
+          this.publishedMessageJustAfterTimestampVisible = true
+          break
+        case 'resetSubscription':
+          this.resetSubscriptionVisible = true
           break
       }
     },
@@ -326,6 +458,43 @@ export default {
           return false
         }
       })
+    },
+    
+    async getLastCommitMessage() {
+      this.loading = true
+      this.lastCommitMessage = await this.$pulsar.getLastCommitMessages((this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name, this.currentTopic.cluster)
+      this.loading = false
+    },
+    
+    getPublishedMessageJustAfter(formName) {
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+      this.$pulsar.getMessagesPublishedJustAfterTimestamp(topicName, Math.floor(new Date(this.publishedMsgJustAfterInfo.timestamp).getTime() / 1000), this.currentTopic.cluster)
+        .then((resp) => {
+          console.log(resp)
+          this.publishedMessageJustAfterTimestamp = resp
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + err
+          })
+        })
+    },
+    
+    resetSubscription(formName) {
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+      this.$pulsar.resetSubscription(topicName, this.resetSubscriptionInfo.subscription, Math.floor(new Date(this.resetSubscriptionInfo.timestamp).getTime() / 1000), this.currentTopic.cluster)
+        .then((resp) => {
+          this.$message({
+            message: resp.data
+          })
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + err
+          })
+        })
     }
   },
 

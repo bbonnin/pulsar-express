@@ -7,22 +7,63 @@
         :data="functions"
         style="width: 100%"
         height_="800"
-        :default-sort = "{prop: 'name', order: 'ascending'}">
+        :default-sort = "{prop: 'status.numRunning', order: 'ascending'}">
         <el-table-column
           fixed
           label="Name"
           sortable
           width="200">
           <template slot-scope="scope">
-            <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">
-              {{scope.row.infos.tenant}}/{{scope.row.infos.namespace}}/{{scope.row.infos.name}}
-            </el-button>
+            <a :href="`/functions/${scope.row.cluster.name}/${scope.row.infos.tenant}/${scope.row.infos.namespace}/${scope.row.infos.name}`">
+              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">
+                {{scope.row.infos.tenant}}/{{scope.row.infos.namespace}}/{{scope.row.infos.name}}
+              </el-button>
+            </a>
           </template>
         </el-table-column>
         <el-table-column
           prop="infos.runtime"
           label="Runtime"
           width="100">
+        </el-table-column>
+        <el-table-column
+          prop="status.numRunning"
+          label="Running"
+          sortable
+          width="100">
+          <template slot-scope="scope">
+            <el-tag
+                :type="scope.row.status.numRunning >= scope.row.status.numInstances ? 'success' : scope.row.status.numRunning <= 0 ? 'danger' : 'warning'"
+                disable-transitions>
+                {{scope.row.status.numRunning}}/{{scope.row.status.numInstances}}
+            </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Read/Written">
+          <template slot-scope="scope">
+            {{scope.row.status.instances.reduce((r, d) => r + d.status.numReceived, 0)}}/{{scope.row.status.instances.reduce((r, d) => r + d.status.numSuccessfullyProcessed, 0)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Restarts"
+          width="100">
+          <template slot-scope="scope">
+            {{scope.row.status.instances.reduce((r, d) => r + d.status.numRestarts, 0)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Latency"
+          width="100">
+          <template slot-scope="scope">
+            {{scope.row.status.instances.reduce((r, d) => Math.round(Math.max(r, d.status.averageLatency) * 100) / 100, 0)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Last invocation">
+          <template slot-scope="scope">
+            {{new Date(scope.row.status.instances.reduce((r, d) => Math.max(r, d.status.lastInvocationTime), 0)).toLocaleDateString('en-us', { month:"short", day:"numeric", hour:"numeric", minute:"numeric", second:"numeric"})}}
+          </template>
         </el-table-column>
         <el-table-column
           label="Class name">
@@ -129,8 +170,8 @@ export default {
     },
 
     showDetails(id) {
-      this.setFunction(id)
-      this.$router.push({ path: '/functions/' + id })
+      const func = this.functions[id]
+      this.$router.push({ path: '/functions/' + func.cluster.name + '/' + func.infos.tenant + '/' + func.infos.namespace + '/' + func.infos.name })
     },
 
     async reload() {
@@ -175,10 +216,12 @@ export default {
       for (const functions of functionsByNs) {
         for (const fctName of functions.names) {
           const fctSInfos = await this.$pulsar.fetchFunction(functions.namespace + '/' + fctName, functions.cluster)
+          const fctStatus = await this.$pulsar.fetchFunctionStatus(functions.namespace + '/' + fctName, functions.cluster)
           this.functions.push({
             id: this.functions.length,
             cluster: functions.cluster,
-            infos: fctSInfos })
+            infos: fctSInfos,
+            status: fctStatus })
         }
       }
 

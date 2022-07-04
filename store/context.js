@@ -5,7 +5,9 @@ export const state = () => ({
   namespaces: null,
   function: null,
   functions: null,
-  cluster: null
+  cluster: null,
+  sink: null,
+  sinks: null
 })
 
 export const mutations = {
