@@ -20,6 +20,18 @@
           <el-button type="text" class="big-number" @click.native.prevent="$router.push({ path: '/topics' })">{{ topics.length }}</el-button>
         </el-card>
       </el-col>
+      <el-col :span="8">
+        <el-card shadow="never">
+          <h3 class="subtitle"><img src="~/assets/brokers.png" width="32" />Workers</h3>
+          <el-button type="text" class="big-number" @click.native.prevent="$router.push({ path: '/workers' })">{{ workers.length }}</el-button>
+        </el-card>
+      </el-col>
+      <el-col :span="8">
+        <el-card shadow="never">
+          <h3 class="subtitle"><img src="~/assets/sinks.png" width="32" />Sinks</h3>
+          <el-button type="text" class="big-number" @click.native.prevent="$router.push({ path: '/sinks' })">{{ sinks.length }}</el-button>
+        </el-card>
+      </el-col>
     </el-row>
   </div>
 </template>
@@ -36,7 +48,9 @@ export default {
     return {
       clusters: [],
       brokers: [],
-      topics: []
+      topics: [],
+      workers: [],
+      sinks: []
     }
   },
 
@@ -52,6 +66,8 @@ export default {
       this.clusters = await this.$pulsar.fetchClusters(this.connections)
       this.brokers = await this.$pulsar.fetchBrokers(this.clusters)
       this.topics = await this.$pulsar.fetchTopics(this.clusters)
+      this.workers = await this.$pulsar.fetchWorkers(this.clusters)
+      this.sinks = await this.$pulsar.fetchSinks(this.clusters)
     }
   },
 
