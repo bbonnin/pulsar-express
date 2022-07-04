@@ -6,13 +6,12 @@
       <el-table
         :data="sinks"
         style="width: 100%"
-        :default-sort = "{prop: 'status.numRunning', order: 'ascending'}>
+        :default-sort = "{prop: 'status.numRunning', order: 'ascending'}">
         <el-table-column
           fixed
           label="Name"
           prop="sink"
-          sortable
-          width="250">
+          sortable>
           <template slot-scope="scope">
             <a :href="`/sinks/${scope.row.cluster.name}/${scope.row.ns.namespace}/${scope.row.sink}`">
               <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.sink }}</el-button>
@@ -30,6 +29,24 @@
                 disable-transitions>
                 {{scope.row.status.numRunning}}/{{scope.row.status.numInstances}}
             </el-tag>
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Read/Written">
+          <template slot-scope="scope">
+            {{scope.row.status.instances.reduce((r, d) => r + d.status.numReadFromPulsar, 0)}}/{{scope.row.status.instances.reduce((r, d) => r + d.status.numWrittenToSink, 0)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Restarts">
+          <template slot-scope="scope">
+            {{scope.row.status.instances.reduce((r, d) => r + d.status.numRestarts, 0)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Last received">
+          <template slot-scope="scope">
+            {{new Date(scope.row.status.instances.reduce((r, d) => Math.max(r, d.status.lastReceivedTime), 0)).toLocaleDateString('en-us', { month:"short", day:"numeric", hour:"numeric", minute:"numeric", second:"numeric"})}}
           </template>
         </el-table-column>
         <el-table-column
