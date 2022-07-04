@@ -337,4 +337,8 @@ export default $axios => ({
 
     return workers
   },
+  
+  async rebalanceWorkers(cluster) {
+    return await $axios.$put('/api/admin/v2/worker/rebalance?' + getServiceParams(cluster.connection))
+  },
 })

@@ -67,6 +67,18 @@
             </el-button>
           </template>
         </el-table-column>
+        <el-table-column
+          fixed="right"
+          label="Actions">
+          <template slot-scope="scope">
+            <el-button
+              @click.native.prevent="rebalanceWorkers(scope.row)"
+              type="warning" plain round
+              size="mini">
+              Rebalance worker
+            </el-button>
+          </template>
+        </el-table-column>
       </el-table>
     </div>
     <div v-else>
@@ -198,6 +210,21 @@ export default {
       this.loading = true
       this.clusters = await this.$pulsar.fetchClusters(this.connections)
       this.loading = false
+    },
+    
+    rebalanceWorkers(cluster) {
+      this.$pulsar.rebalanceWorkers(cluster)
+        .then((resp) => {
+          this.$message({
+            message: 'Rebalanced: ' + resp
+          })
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + err
+          })
+        })
     }
   },
 
