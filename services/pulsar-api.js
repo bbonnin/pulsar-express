@@ -232,7 +232,33 @@ export default $axios => ({
   },
 
   peekMessages(topicName, subName, count, cluster) {
-    return $axios.get('/api/admin/v2/' + topicName + '/subscription/' + subName + '/position/' + count + '?' + getServiceParams(cluster.connection))
+    return $axios.get('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '/position/' + count + '?' + getServiceParams(cluster.connection))
+  },
+  
+  async getLastCommitMessages(topicName, cluster) {
+    const lastCommitMessage = await $axios.$get('/api/admin/v2/' + topicName + '/lastMessageId?' + getServiceParams(cluster.connection))
+    if (lastCommitMessage) {
+        return {
+            ...lastCommitMessage,
+            payload: await $axios.$get('/api/admin/v2/' + topicName + '/ledger/' + lastCommitMessage.ledgerId + '/entry/' + lastCommitMessage.entryId + '?' + getServiceParams(cluster.connection))
+        }
+    }
+    return null;
+  },
+  
+  async getMessagesPublishedJustAfterTimestamp(topicName, timestamp, cluster) {
+    const publishedMessage = await $axios.$get('/api/admin/v2/' + topicName + '/messageid/' + timestamp + '?' + getServiceParams(cluster.connection))
+    if (publishedMessage) {
+        return {
+            ...publishedMessage, 
+            payload: await $axios.$get('/api/admin/v2/' + topicName + '/ledger/' + publishedMessage.ledgerId + '/entry/' + publishedMessage.entryId + '?' + getServiceParams(cluster.connection))
+        }
+    }
+    return null;
+  },
+  
+  async resetSubscription(topicName, subName, timestamp, cluster) {
+    return await $axios.$post('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '/resetcursor/' + timestamp + '?' + getServiceParams(cluster.connection))
   },
 
   async fetchBrokers(clusters) {
