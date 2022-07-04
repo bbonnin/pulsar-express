@@ -40,6 +40,32 @@
           </template>
         </el-table-column>
         <el-table-column
+          label="Read/Written">
+          <template slot-scope="scope">
+            {{scope.row.status.instances.reduce((r, d) => r + d.status.numReceived, 0)}}/{{scope.row.status.instances.reduce((r, d) => r + d.status.numSuccessfullyProcessed, 0)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Restarts"
+          width="100">
+          <template slot-scope="scope">
+            {{scope.row.status.instances.reduce((r, d) => r + d.status.numRestarts, 0)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Latency"
+          width="100">
+          <template slot-scope="scope">
+            {{scope.row.status.instances.reduce((r, d) => Math.round(Math.max(r, d.status.averageLatency) * 100) / 100, 0)}}
+          </template>
+        </el-table-column>
+        <el-table-column
+          label="Last invocation">
+          <template slot-scope="scope">
+            {{new Date(scope.row.status.instances.reduce((r, d) => Math.max(r, d.status.lastInvocationTime), 0)).toLocaleDateString('en-us', { month:"short", day:"numeric", hour:"numeric", minute:"numeric", second:"numeric"})}}
+          </template>
+        </el-table-column>
+        <el-table-column
           label="Class name">
           <template slot-scope="scope">
             {{shortClassName(scope.row.infos.className)}}
