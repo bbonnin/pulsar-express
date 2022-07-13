@@ -64,6 +64,12 @@
               size="mini">
               Details
             </el-button>
+            <el-button
+              @click.native.prevent="deleteSink(scope.row.id)"
+              type="danger" plain round
+              size="mini">
+              Delete
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -149,6 +155,24 @@ export default {
       const sink = this.sinks[id]
       this.$router.push({ path: '/sinks/' + sink.cluster.name + '/' + sink.ns.namespace + '/' + sink.sink })
     },
+    
+    deleteSink(id) {
+      const sink = this.sinks[id]
+      this.$pulsar.deleteSink(sink.sink, sink.cluster, sink.ns)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Deleted'
+          })
+          this.reload()
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Delete error: ' + err
+          })
+        })
+    }
   },
 
   head() {

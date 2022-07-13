@@ -199,6 +199,10 @@ export default $axios => ({
   async startStopSinkInstances(action, sink, cluster, ns) {
     return await $axios.$post('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '/' + action + '?' + getServiceParams(cluster.connection, true))
   },
+  
+  async deleteSink(sink, cluster, ns) {
+    return await $axios.$delete('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '?' + getServiceParams(cluster.connection, true))
+  },
 
   async fetchSourcesNS(namespaces) {
     let sources = []
