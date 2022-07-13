@@ -14,7 +14,10 @@
           sortable>
           <template slot-scope="scope">
             <a :href="`/sinks/${scope.row.cluster.name}/${scope.row.ns.namespace}/${scope.row.sink}`">
-              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.sink }}</el-button>
+              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)" style="text-align: left">
+                <p style="text-align: left; font-size: small; color: darkgray; margin-bottom: 4px">{{scope.row.ns.namespace}}/</p>
+                {{ scope.row.sink }}
+              </el-button>
             </a>
           </template>
         </el-table-column>
