@@ -137,8 +137,8 @@
           </el-button>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="peekMessages">Peek messages</el-dropdown-item>
-            <el-dropdown-item command="getLastCommitMessage">Get last commit msg</el-dropdown-item>
-            <el-dropdown-item command="getPublishedMessageJustAfter">Get published msg just after a timestamp</el-dropdown-item>
+            <el-dropdown-item command="getLastCommitMessage">Get last commit message</el-dropdown-item>
+            <el-dropdown-item command="getPublishedMessageJustAfter">Get published message just after a timestamp</el-dropdown-item>
             <el-dropdown-item command="resetSubscription">Reset subscription</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
