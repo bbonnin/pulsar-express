@@ -268,6 +268,10 @@ export default $axios => ({
   async resetSubscription(topicName, subName, timestamp, cluster) {
     return await $axios.$post('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '/resetcursor/' + timestamp + '?' + getServiceParams(cluster.connection))
   },
+  
+  async createMissedPartitions(topicName, cluster) {
+    return await $axios.$post('/api/admin/v2/' + topicName + '/createMissedPartitions?' + getServiceParams(cluster.connection))
+  },
 
   async fetchBrokers(clusters) {
     let brokers = []
