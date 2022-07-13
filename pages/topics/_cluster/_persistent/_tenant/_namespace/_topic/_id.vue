@@ -521,7 +521,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - topic'
+      title: 'Topic ' + this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic + ' - Pulsar Express'
     }
   }
 }
