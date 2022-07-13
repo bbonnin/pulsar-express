@@ -210,7 +210,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - sink'
+      title: 'Sink ' + this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.id + ' - Pulsar Express'
     }
   }
 }
