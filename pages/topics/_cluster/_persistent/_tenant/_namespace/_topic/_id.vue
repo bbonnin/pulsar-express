@@ -474,7 +474,6 @@ export default {
       const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
       this.$pulsar.getMessagesPublishedJustAfterTimestamp(topicName, Math.floor(new Date(this.publishedMsgJustAfterInfo.timestamp).getTime() / 1000), this.currentTopic.cluster)
         .then((resp) => {
-          console.log(resp)
           this.publishedMessageJustAfterTimestamp = resp
         })
         .catch ((err) => {
