@@ -279,7 +279,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - function'
+      title: 'Function ' + this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.id + ' - Pulsar Express'
     }
   }
 }
