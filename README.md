@@ -253,3 +253,7 @@ For Docker:
 ## Misc
 
 Icons: https://icones8.fr/
+
+## Credit
+
+Pulsar Express is a single only tool which is using daily to manage and maintain a Pulsar cluster of over ten nodes in production environment at https://doopage.com.

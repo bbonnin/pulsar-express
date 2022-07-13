@@ -39,6 +39,10 @@ export default $axios => ({
   async fetchTopicStats(topic, cluster) {
     return await $axios.$get('/api/admin/v2/' + topic + '/stats?' + getServiceParams(cluster.connection))
   },
+  
+  async deleteFunction(fctName, cluster) {
+    return await $axios.$delete('/api/admin/v3/functions/' + fctName + '?' + getServiceParams(cluster.connection, true))
+  },
 
   async fetchNamespace(ns, cluster) {
     return await $axios.$get('/api/admin/v2/namespaces/' + ns + '?' + getServiceParams(cluster.connection))
@@ -195,6 +199,10 @@ export default $axios => ({
   async startStopSinkInstances(action, sink, cluster, ns) {
     return await $axios.$post('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '/' + action + '?' + getServiceParams(cluster.connection, true))
   },
+  
+  async deleteSink(sink, cluster, ns) {
+    return await $axios.$delete('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '?' + getServiceParams(cluster.connection, true))
+  },
 
   async fetchSourcesNS(namespaces) {
     let sources = []
@@ -259,6 +267,10 @@ export default $axios => ({
   
   async resetSubscription(topicName, subName, timestamp, cluster) {
     return await $axios.$post('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '/resetcursor/' + timestamp + '?' + getServiceParams(cluster.connection))
+  },
+  
+  async createMissedPartitions(topicName, cluster) {
+    return await $axios.$post('/api/admin/v2/' + topicName + '/createMissedPartitions?' + getServiceParams(cluster.connection))
   },
 
   async fetchBrokers(clusters) {

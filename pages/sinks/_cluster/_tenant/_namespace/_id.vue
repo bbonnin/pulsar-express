@@ -7,10 +7,6 @@
       <h3>Properties</h3>
 
       <propertyview :props="policies"></propertyview>
-
-      <div class="button-bar">
-        <el-button @click="reload()">Reload</el-button>
-      </div>
       
       <h3>Instances</h3>
       <div v-if="instances.length > 0">
@@ -69,6 +65,7 @@
         <el-button @click="reload()">Reload</el-button>
         <el-button type="success" @click="startAllInstances()">Start all instances</el-button>
         <el-button type="warning" @click="stopAllInstances()">Stop all instances</el-button>
+        <el-button type="danger" @click="deleteSink()">Delete</el-button>
       </div>
     </div>
     <div v-else>
@@ -167,6 +164,22 @@ export default {
           })
         })
     },
+    
+    deleteSink() {
+      this.$pulsar.deleteSink(this.currentSink.sink, this.currentSink.cluster, this.currentSink.ns)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Deleted'
+          })
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Delete error: ' + err
+          })
+        })
+    },
 
     async reload() {
       let connections = []
@@ -197,7 +210,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - sink'
+      title: 'Sink ' + this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.id + ' - Pulsar Express'
     }
   }
 }

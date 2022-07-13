@@ -73,7 +73,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - overview'
+      title: 'Overview - Pulsar Express'
     }
   }
 }

@@ -137,9 +137,10 @@
           </el-button>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="peekMessages">Peek messages</el-dropdown-item>
-            <el-dropdown-item command="getLastCommitMessage">Get last commit msg</el-dropdown-item>
-            <el-dropdown-item command="getPublishedMessageJustAfter">Get published msg just after a timestamp</el-dropdown-item>
+            <el-dropdown-item command="getLastCommitMessage">Get last commit message</el-dropdown-item>
+            <el-dropdown-item command="getPublishedMessageJustAfter">Get published message just after a timestamp</el-dropdown-item>
             <el-dropdown-item command="resetSubscription">Reset subscription</el-dropdown-item>
+            <el-dropdown-item command="createMissedPartitions">Create missed partitions</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
         <el-button @click="reload()">Reload</el-button>
@@ -427,6 +428,9 @@ export default {
         case 'resetSubscription':
           this.resetSubscriptionVisible = true
           break
+        case 'createMissedPartitions':
+          this.createMissedPartitions()
+          break
       }
     },
 
@@ -470,7 +474,6 @@ export default {
       const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
       this.$pulsar.getMessagesPublishedJustAfterTimestamp(topicName, Math.floor(new Date(this.publishedMsgJustAfterInfo.timestamp).getTime() / 1000), this.currentTopic.cluster)
         .then((resp) => {
-          console.log(resp)
           this.publishedMessageJustAfterTimestamp = resp
         })
         .catch ((err) => {
@@ -486,7 +489,25 @@ export default {
       this.$pulsar.resetSubscription(topicName, this.resetSubscriptionInfo.subscription, Math.floor(new Date(this.resetSubscriptionInfo.timestamp).getTime() / 1000), this.currentTopic.cluster)
         .then((resp) => {
           this.$message({
-            message: resp.data
+            type: 'success',
+            message: 'Reset the subscription successfully!'
+          })
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + err
+          })
+        })
+    },
+    
+    createMissedPartitions() {
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+      this.$pulsar.createMissedPartitions(topicName, this.currentTopic.cluster)
+        .then((resp) => {
+          this.$message({
+            type: 'success',
+            message: 'Created missed partitions!'
           })
         })
         .catch ((err) => {
@@ -500,7 +521,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - topic'
+      title: 'Topic ' + this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic + ' - Pulsar Express'
     }
   }
 }

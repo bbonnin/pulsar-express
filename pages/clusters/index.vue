@@ -230,7 +230,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - clusters'
+      title: 'Clusters - Pulsar Express'
     }
   }
 }

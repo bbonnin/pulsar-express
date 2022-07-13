@@ -14,7 +14,10 @@
           sortable>
           <template slot-scope="scope">
             <a :href="`/sinks/${scope.row.cluster.name}/${scope.row.ns.namespace}/${scope.row.sink}`">
-              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.sink }}</el-button>
+              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)" style="text-align: left">
+                <p style="text-align: left; font-size: small; color: darkgray; margin-bottom: 4px">{{scope.row.ns.namespace}}/</p>
+                {{ scope.row.sink }}
+              </el-button>
             </a>
           </template>
         </el-table-column>
@@ -63,6 +66,12 @@
               type="primary" plain round
               size="mini">
               Details
+            </el-button>
+            <el-button
+              @click.native.prevent="deleteSink(scope.row.id)"
+              type="danger" plain round
+              size="mini">
+              Delete
             </el-button>
           </template>
         </el-table-column>
@@ -149,11 +158,29 @@ export default {
       const sink = this.sinks[id]
       this.$router.push({ path: '/sinks/' + sink.cluster.name + '/' + sink.ns.namespace + '/' + sink.sink })
     },
+    
+    deleteSink(id) {
+      const sink = this.sinks[id]
+      this.$pulsar.deleteSink(sink.sink, sink.cluster, sink.ns)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Deleted'
+          })
+          this.reload()
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Delete error: ' + err
+          })
+        })
+    }
   },
 
   head() {
     return {
-      title: 'pulsar-express - sinks'
+      title: 'Sinks - Pulsar Express'
     }
   }
 }

@@ -15,8 +15,9 @@
           width="200">
           <template slot-scope="scope">
             <a :href="`/functions/${scope.row.cluster.name}/${scope.row.infos.tenant}/${scope.row.infos.namespace}/${scope.row.infos.name}`">
-              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">
-                {{scope.row.infos.tenant}}/{{scope.row.infos.namespace}}/{{scope.row.infos.name}}
+              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)" style="text-align: left">
+                <p style="text-align: left; font-size: small; color: darkgray; margin-bottom: 4px">{{scope.row.infos.tenant}}/{{scope.row.infos.namespace}}/</p>
+                {{scope.row.infos.name}}
               </el-button>
             </a>
           </template>
@@ -66,39 +67,21 @@
           </template>
         </el-table-column>
         <el-table-column
-          label="Class name">
-          <template slot-scope="scope">
-            {{shortClassName(scope.row.infos.className)}}
-          </template>
-        </el-table-column>
-        <el-table-column
-          label="Input topics">
-          <template slot-scope="scope">
-            <span v-for="(input,key) in scope.row.infos.inputSpecs" :key="key">
-              {{getSimpleTopicName(key)}}<br/>
-            </span>
-          </template>
-        </el-table-column>
-        <el-table-column
-          prop="infos.output"
-          label="Output topic"
-          :formatter="cellFormatSimpleTopicName">
-        </el-table-column>
-        <el-table-column
-          prop="infos.logTopic"
-          label="Log topic"
-          :formatter="cellFormatSimpleTopicName">
-        </el-table-column>
-        <el-table-column
           fixed="right"
           label="Actions"
-          width="120">
+          width="200">
           <template slot-scope="scope">
             <el-button
               @click.native.prevent="showDetails(scope.row.id)"
               type="primary" plain round
               size="mini">
               Details
+            </el-button>
+            <el-button
+              @click.native.prevent="deleteFunction(scope.row.id)"
+              type="danger" plain round
+              size="mini">
+              Delete
             </el-button>
           </template>
         </el-table-column>
@@ -173,6 +156,24 @@ export default {
       const func = this.functions[id]
       this.$router.push({ path: '/functions/' + func.cluster.name + '/' + func.infos.tenant + '/' + func.infos.namespace + '/' + func.infos.name })
     },
+    
+    deleteFunction(id) {
+      const func = this.functions[id]
+      this.$pulsar.deleteFunction(func.fullname, func.currentFunction.cluster)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Deleted'
+          })
+          this.reload()
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Delete error: ' + err
+          })
+        })
+    },
 
     async reload() {
       this.loading = true
@@ -233,7 +234,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - functions'
+      title: 'Functions - Pulsar Express'
     }
   }
 }
