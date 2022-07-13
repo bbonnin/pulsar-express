@@ -39,6 +39,10 @@ export default $axios => ({
   async fetchTopicStats(topic, cluster) {
     return await $axios.$get('/api/admin/v2/' + topic + '/stats?' + getServiceParams(cluster.connection))
   },
+  
+  async deleteFunction(fctName, cluster) {
+    return await $axios.$delete('/api/admin/v3/functions/' + fctName + '?' + getServiceParams(cluster.connection, true))
+  },
 
   async fetchNamespace(ns, cluster) {
     return await $axios.$get('/api/admin/v2/namespaces/' + ns + '?' + getServiceParams(cluster.connection))

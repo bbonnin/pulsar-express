@@ -100,6 +100,12 @@
               size="mini">
               Details
             </el-button>
+            <el-button
+              @click.native.prevent="deleteFunction(scope.row.id)"
+              type="danger" plain round
+              size="mini">
+              Delete
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -172,6 +178,24 @@ export default {
     showDetails(id) {
       const func = this.functions[id]
       this.$router.push({ path: '/functions/' + func.cluster.name + '/' + func.infos.tenant + '/' + func.infos.namespace + '/' + func.infos.name })
+    },
+    
+    deleteFunction(id) {
+      const func = this.functions[id]
+      this.$pulsar.deleteFunction(func.fullname, func.currentFunction.cluster)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Deleted'
+          })
+          this.reload()
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Delete error: ' + err
+          })
+        })
     },
 
     async reload() {

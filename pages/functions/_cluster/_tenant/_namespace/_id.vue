@@ -121,6 +121,7 @@
         <el-button @click="reload()">Reload</el-button>
         <el-button type="success" @click="startAllInstances()">Start all instances</el-button>
         <el-button type="warning" @click="stopAllInstances()">Stop all instances</el-button>
+        <el-button type="danger" @click="deleteFunction()">Delete</el-button>
       </div>
     </div>
     <div v-else>
@@ -255,6 +256,22 @@ export default {
           this.$message({
             type: 'error',
             message: 'Start error: ' + err
+          })
+        })
+    },
+    
+    deleteFunction() {
+      this.$pulsar.deleteFunction(this.fullname, this.currentFunction.cluster)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Deleted'
+          })
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Delete error: ' + err
           })
         })
     }
