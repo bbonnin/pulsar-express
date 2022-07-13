@@ -234,7 +234,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - functions'
+      title: 'Functions - Pulsar Express'
     }
   }
 }

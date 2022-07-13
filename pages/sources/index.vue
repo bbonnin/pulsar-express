@@ -115,7 +115,7 @@ export default {
 
   head() {
     return {
-      title: "pulsar-express - sources",
+      title: "Sources - Pulsar Express",
     };
   },
 };

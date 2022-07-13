@@ -180,7 +180,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - sinks'
+      title: 'Sinks - Pulsar Express'
     }
   }
 }

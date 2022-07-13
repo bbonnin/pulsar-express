@@ -212,7 +212,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - namespaces'
+      title: 'Namespaces - Pulsar Express'
     }
   }
 }

@@ -349,7 +349,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - topics'
+      title: 'Topics - Pulsar Express'
     }
   }
 }

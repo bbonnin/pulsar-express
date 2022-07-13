@@ -159,7 +159,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - connections'
+      title: 'Connections - Pulsar Express'
     }
   }
 }

@@ -110,7 +110,7 @@ export default {
 
   head() {
     return {
-      title: 'pulsar-express - brokers'
+      title: 'Brokers - Pulsar Express'
     }
   }
 }
