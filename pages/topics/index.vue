@@ -19,7 +19,10 @@
           width="300">
           <template slot-scope="scope">
             <a :href="`/topics/${scope.row.cluster.name}/${scope.row.persistent ? 'persistent' : 'non-persistent'}/${scope.row.name}`">
-              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)">{{ scope.row.name }}</el-button>
+              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)" style="text-align: left">
+                <p style="font-size: small; color: darkgray; margin-bottom: 4px">{{scope.row.name.substring(0, scope.row.name.lastIndexOf('/'))}}/</p>
+                {{ shortenTopicName(scope.row.name) }}
+              </el-button>
             </a>
           </template>
         </el-table-column>
@@ -334,6 +337,14 @@ export default {
     handlePageChange(val) {
         this.page = val;
     },
+    
+    shortenTopicName(fullTopicName) {
+        if (fullTopicName.match(/-partition-[0-9]+$/)) {
+            var topicName = fullTopicName.substring(fullTopicName.lastIndexOf('/') + 1)
+            return topicName.substring(0, topicName.lastIndexOf('-partition-')) + ' (' + topicName.substring(topicName.lastIndexOf('-partition-') + 11) + ')'
+        }
+        return fullTopicName.substring(fullTopicName.lastIndexOf('/') + 1)
+    }
   },
 
   head() {
