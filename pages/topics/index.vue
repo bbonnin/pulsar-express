@@ -5,7 +5,7 @@
     <div v-else-if="topics.length > 0">
       <el-form :inline="true">
         <el-form-item label="Search topics" size="small">
-          <el-input v-model="search" placeholder="Type to search"></el-input>
+          <el-input v-model="search" placeholder="Type to search" @change="fetchTopicStats()"></el-input>
         </el-form-item>
       </el-form>
       <el-table
