@@ -19,7 +19,7 @@
           width="300">
           <template slot-scope="scope">
             <a :href="`/topics/${scope.row.cluster.name}/${scope.row.persistent ? 'persistent' : 'non-persistent'}/${scope.row.name}`">
-              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)" style="text-align: left">
+              <el-button type="text" @click.native.prevent="showDetails(scope.row)" style="text-align: left">
                 <p style="font-size: small; color: darkgray; margin-bottom: 4px">{{scope.row.name.substring(0, scope.row.name.lastIndexOf('/'))}}/</p>
                 {{ shortenTopicName(scope.row.name) }}
               </el-button>
@@ -273,9 +273,8 @@ export default {
         })
     },
 
-    showDetails(id) {
-      const topic = this.topics[id]
-      this.$router.push({ path: '/topics/' + topic.cluster.name + '/' + (topic.persistent ? 'persistent' : 'non-persistent') + '/' + topic.name })
+    showDetails(ref) {
+      this.$router.push({ path: '/topics/' + ref.cluster.name + '/' + (ref.persistent ? 'persistent' : 'non-persistent') + '/' + ref.name })
     },
 
     async reload() {
