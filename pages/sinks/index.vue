@@ -27,29 +27,43 @@
           sortable
           width="100">
           <template slot-scope="scope">
-            <el-tag
+            <el-tag v-if="scope.row.status" 
                 :type="scope.row.status.numRunning >= scope.row.status.numInstances ? 'success' : scope.row.status.numRunning <= 0 ? 'danger' : 'warning'"
                 disable-transitions>
                 {{scope.row.status.numRunning}}/{{scope.row.status.numInstances}}
+            </el-tag>
+            <el-tag v-else  
+                type="warning"
+                disable-transitions>
+                NaN
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column
           label="Read/Written">
           <template slot-scope="scope">
-            {{scope.row.status.instances.reduce((r, d) => r + d.status.numReadFromPulsar, 0)}}/{{scope.row.status.instances.reduce((r, d) => r + d.status.numWrittenToSink, 0)}}
+            <span v-if="scope.row.status">
+              {{scope.row.status.instances.reduce((r, d) => r + d.status.numReadFromPulsar, 0)}}/{{scope.row.status.instances.reduce((r, d) => r + d.status.numWrittenToSink, 0)}}
+            </span>
+            <span v-else>NaN</span>
           </template>
         </el-table-column>
         <el-table-column
           label="Restarts">
           <template slot-scope="scope">
-            {{scope.row.status.instances.reduce((r, d) => r + d.status.numRestarts, 0)}}
+            <span v-if="scope.row.status">
+              {{scope.row.status.instances.reduce((r, d) => r + d.status.numRestarts, 0)}}
+            </span>
+            <span v-else>NaN</span>
           </template>
         </el-table-column>
         <el-table-column
           label="Last received">
           <template slot-scope="scope">
-            {{new Date(scope.row.status.instances.reduce((r, d) => Math.max(r, d.status.lastReceivedTime), 0)).toLocaleDateString('en-us', { month:"short", day:"numeric", hour:"numeric", minute:"numeric", second:"numeric"})}}
+            <span v-if="scope.row.status">
+              {{new Date(scope.row.status.instances.reduce((r, d) => Math.max(r, d.status.lastReceivedTime), 0)).toLocaleDateString('en-us', { month:"short", day:"numeric", hour:"numeric", minute:"numeric", second:"numeric"})}}
+            </span>
+            <span v-else>NaN</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -138,16 +152,26 @@ export default {
 
       this.clusters = await this.$pulsar.fetchClusters(connections)
 
-      this.sinks = []
-      let sinks = await this.$pulsar.fetchSinks(this.clusters)
+      this.sinks = await this.$pulsar.fetchSinks(this.clusters)
       
-      for(const el of sinks) {
-        const sinkStatus = await this.$pulsar.fetchSinkStatus(el.sink, el.cluster, el.ns)
-        this.sinks.push({ ...el, 
-            id: this.sinks.length,
-            status: sinkStatus
-        })
+      const sinkWithStatus = (ref, status) => {
+        return {
+          ...ref,
+          status: status
+        }
       }
+
+      this.sinks = await Promise.all(
+        this.sinks.map(ref =>
+          this.$pulsar.fetchSinkStatus(ref.sink, ref.cluster, ref.ns)
+            .then((res) => sinkWithStatus(ref, res))
+            .catch((e) => {
+              console.error(e);
+              return sinkWithStatus(ref, undefined);
+            })
+        )
+      )
+      
       this.setSinks(this.sinks)
 
       this.loading = false

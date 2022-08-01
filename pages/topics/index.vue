@@ -5,7 +5,7 @@
     <div v-else-if="topics.length > 0">
       <el-form :inline="true">
         <el-form-item label="Search topics" size="small">
-          <el-input v-model="search" placeholder="Type to search"></el-input>
+          <el-input v-model="search" placeholder="Type to search" @change="fetchTopicStats()"></el-input>
         </el-form-item>
       </el-form>
       <el-table
@@ -19,7 +19,7 @@
           width="300">
           <template slot-scope="scope">
             <a :href="`/topics/${scope.row.cluster.name}/${scope.row.persistent ? 'persistent' : 'non-persistent'}/${scope.row.name}`">
-              <el-button type="text" @click.native.prevent="showDetails(scope.row.id)" style="text-align: left">
+              <el-button type="text" @click.native.prevent="showDetails(scope.row)" style="text-align: left">
                 <p style="font-size: small; color: darkgray; margin-bottom: 4px">{{scope.row.name.substring(0, scope.row.name.lastIndexOf('/'))}}/</p>
                 {{ shortenTopicName(scope.row.name) }}
               </el-button>
@@ -87,7 +87,8 @@
               layout="prev, pager, next"
               @current-change="handlePageChange"
               :page-size="pageSize"
-              :total="total">
+              :total="total"
+              :current-page="page">
           </el-pagination>
       </div>
     </div>
@@ -272,9 +273,8 @@ export default {
         })
     },
 
-    showDetails(id) {
-      const topic = this.topics[id]
-      this.$router.push({ path: '/topics/' + topic.cluster.name + '/' + (topic.persistent ? 'persistent' : 'non-persistent') + '/' + topic.name })
+    showDetails(ref) {
+      this.$router.push({ path: '/topics/' + ref.cluster.name + '/' + (ref.persistent ? 'persistent' : 'non-persistent') + '/' + ref.name })
     },
 
     async reload() {
@@ -295,29 +295,7 @@ export default {
       
       const topicRefs = await this.$pulsar.fetchTopics(this.clusters)
 
-      this.topics = []
-
-      const topicWithStats = (ref, stats) => {
-        return {
-          cluster: ref.cluster,
-          name: ref.topic.substring(ref.topic.indexOf('://') + 3), 
-          persistent: ref.topic.startsWith('persistent'), 
-          stats: stats
-        }
-      }
-
-      this.topics = await Promise.all(
-        topicRefs.map(ref =>
-          this.$pulsar.fetchTopicStats(ref.topic.replace(":/",""), ref.cluster)
-            .then((topicStats) => topicWithStats(ref, topicStats))
-            .catch((e) => {
-              console.error(e);
-              return topicWithStats(ref, undefined);
-            })
-        )
-      )
-
-      this.topics = this.topics.map((t, id) => ({ ...t, id }))
+      this.topics = topicRefs.map((ref) => ({ topic: ref.topic, name: ref.topic.substring(ref.topic.indexOf('://') + 3), cluster: ref.cluster, persistent: ref.topic.startsWith('persistent') }))
 
       /*for (const ref of topicRefs) {
         const topicStats = await this.$pulsar.fetchTopicStats(ref.topic.replace(":/",""), ref.cluster)
@@ -332,10 +310,50 @@ export default {
       this.setTopics(this.topics)
 
       this.loading = false
+      
+      this.fetchTopicStats()
+    },
+    
+    async fetchTopicStats() {
+      this.loading = true
+      var filteredTopics = this.topics.filter(data => !this.search || data.name.toLowerCase().includes(this.search.toLowerCase()));
+      filteredTopics = filteredTopics.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page)
+    
+      const topicWithStats = (ref, stats) => {
+        return {
+          ...ref, 
+          stats: stats
+        }
+      }
+      
+      filteredTopics = await Promise.all(
+        filteredTopics.map(ref =>
+          this.$pulsar.fetchTopicStats(ref.topic.replace(":/",""), ref.cluster)
+            .then((topicStats) => topicWithStats(ref, topicStats))
+            .catch((e) => {
+              console.error(e);
+              return topicWithStats(ref, undefined);
+            })
+        )
+      )
+      
+      for(const ref of filteredTopics) {
+        for(var i=0; i < this.topics.length; i++) {
+            if (this.topics[i].topic == ref.topic) {
+                this.topics[i].stats = ref.stats
+                break
+            }
+        }
+      }
+      
+      this.setTopics(this.topics)
+      
+      this.loading = false
     },
     
     handlePageChange(val) {
         this.page = val;
+        this.fetchTopicStats();
     },
     
     shortenTopicName(fullTopicName) {

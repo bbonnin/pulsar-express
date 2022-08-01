@@ -11,13 +11,12 @@
         <el-table-column
           fixed
           label="Name"
-          sortable
-          width="200">
+          sortable>
           <template slot-scope="scope">
-            <a :href="`/functions/${scope.row.cluster.name}/${scope.row.infos.tenant}/${scope.row.infos.namespace}/${scope.row.infos.name}`">
+            <a :href="`/functions/${scope.row.cluster.name}/${scope.row.ns}/${scope.row.name}`">
               <el-button type="text" @click.native.prevent="showDetails(scope.row.id)" style="text-align: left">
-                <p style="text-align: left; font-size: small; color: darkgray; margin-bottom: 4px">{{scope.row.infos.tenant}}/{{scope.row.infos.namespace}}/</p>
-                {{scope.row.infos.name}}
+                <p style="text-align: left; font-size: small; color: darkgray; margin-bottom: 4px">{{scope.row.ns}}/</p>
+                {{scope.row.name}}
               </el-button>
             </a>
           </template>
@@ -33,37 +32,54 @@
           sortable
           width="100">
           <template slot-scope="scope">
-            <el-tag
+            <el-tag v-if="scope.row.status" 
                 :type="scope.row.status.numRunning >= scope.row.status.numInstances ? 'success' : scope.row.status.numRunning <= 0 ? 'danger' : 'warning'"
                 disable-transitions>
                 {{scope.row.status.numRunning}}/{{scope.row.status.numInstances}}
+            </el-tag>
+            <el-tag v-else  
+                type="warning"
+                disable-transitions>
+                NaN
             </el-tag>
           </template>
         </el-table-column>
         <el-table-column
           label="Read/Written">
           <template slot-scope="scope">
-            {{scope.row.status.instances.reduce((r, d) => r + d.status.numReceived, 0)}}/{{scope.row.status.instances.reduce((r, d) => r + d.status.numSuccessfullyProcessed, 0)}}
+            <span v-if="scope.row.status">
+              {{scope.row.status.instances.reduce((r, d) => r + d.status.numReceived, 0)}}/{{scope.row.status.instances.reduce((r, d) => r + d.status.numSuccessfullyProcessed, 0)}}
+            </span>
+            <span v-else>NaN</span>
           </template>
         </el-table-column>
         <el-table-column
           label="Restarts"
           width="100">
           <template slot-scope="scope">
-            {{scope.row.status.instances.reduce((r, d) => r + d.status.numRestarts, 0)}}
+            <span v-if="scope.row.status">
+              {{scope.row.status.instances.reduce((r, d) => r + d.status.numRestarts, 0)}}
+            </span>
+            <span v-else>NaN</span>
           </template>
         </el-table-column>
         <el-table-column
           label="Latency"
           width="100">
           <template slot-scope="scope">
-            {{scope.row.status.instances.reduce((r, d) => Math.round(Math.max(r, d.status.averageLatency) * 100) / 100, 0)}}
+            <span v-if="scope.row.status">
+              {{scope.row.status.instances.reduce((r, d) => Math.round(Math.max(r, d.status.averageLatency) * 100) / 100, 0)}}
+            </span>
+            <span v-else>NaN</span>
           </template>
         </el-table-column>
         <el-table-column
           label="Last invocation">
           <template slot-scope="scope">
-            {{new Date(scope.row.status.instances.reduce((r, d) => Math.max(r, d.status.lastInvocationTime), 0)).toLocaleDateString('en-us', { month:"short", day:"numeric", hour:"numeric", minute:"numeric", second:"numeric"})}}
+            <span v-if="scope.row.status">
+              {{new Date(scope.row.status.instances.reduce((r, d) => Math.max(r, d.status.lastInvocationTime), 0)).toLocaleDateString('en-us', { month:"short", day:"numeric", hour:"numeric", minute:"numeric", second:"numeric"})}}
+            </span>
+            <span v-else>NaN</span>
           </template>
         </el-table-column>
         <el-table-column
@@ -213,18 +229,52 @@ export default {
       }
 
       this.functions = []
-
+      
       for (const functions of functionsByNs) {
         for (const fctName of functions.names) {
-          const fctSInfos = await this.$pulsar.fetchFunction(functions.namespace + '/' + fctName, functions.cluster)
-          const fctStatus = await this.$pulsar.fetchFunctionStatus(functions.namespace + '/' + fctName, functions.cluster)
           this.functions.push({
             id: this.functions.length,
             cluster: functions.cluster,
-            infos: fctSInfos,
-            status: fctStatus })
+            ns: functions.namespace,
+            name: fctName})
         }
       }
+      
+      const fctWithInfo = (ref, infos) => {
+        return {
+          ...ref,
+          infos: infos
+        }
+      }
+
+      this.functions = await Promise.all(
+        this.functions.map(ref =>
+          this.$pulsar.fetchFunction(ref.ns + '/' + ref.name, ref.cluster)
+            .then((res) => fctWithInfo(ref, res))
+            .catch((e) => {
+              console.error(e);
+              return fctWithInfo(ref, undefined);
+            })
+        )
+      )
+      
+      const fctWithStatus = (ref, status) => {
+        return {
+          ...ref,
+          status: status
+        }
+      }
+
+      this.functions = await Promise.all(
+        this.functions.map(ref =>
+          this.$pulsar.fetchFunctionStatus(ref.ns + '/' + ref.name, ref.cluster)
+            .then((res) => fctWithStatus(ref, res))
+            .catch((e) => {
+              console.error(e);
+              return fctWithStatus(ref, undefined);
+            })
+        )
+      )
 
       this.setFunctions(this.functions)
 
