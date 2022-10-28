@@ -272,6 +272,10 @@ export default $axios => ({
   async createMissedPartitions(topicName, cluster) {
     return await $axios.$post('/api/admin/v2/' + topicName + '/createMissedPartitions?' + getServiceParams(cluster.connection))
   },
+  
+  async skipMesOnSubscription(topicName, subName, numMessages, cluster) {
+    return await $axios.$post('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '/skip/' + numMessages + '?' + getServiceParams(cluster.connection))
+  },
 
   async fetchBrokers(clusters) {
     let brokers = []

@@ -141,6 +141,7 @@
             <el-dropdown-item command="getPublishedMessageJustAfter">Get published message just after a time</el-dropdown-item>
             <el-dropdown-item command="resetSubscription">Reset a subscription to a time</el-dropdown-item>
             <el-dropdown-item command="createMissedPartitions">Create missed partitions</el-dropdown-item>
+            <el-dropdown-item command="skipMesOnSubscription">Skip messages on a subscription</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
         <el-button @click="reload()">Reload</el-button>
@@ -263,6 +264,23 @@
         </el-table>
       </div>
     </el-dialog>
+    
+    <el-dialog title="Skip messages on subscription" :visible.sync="skipMesOnSubscriptionVisible">
+      <el-form ref="skipMesOnSubscriptionForm" :model="skipMesOnSubscriptionInfo" :rules="skipMesOnSubscriptionRules" label-width="200px">
+        <el-form-item label="Subscription" prop="subscription">
+          <el-select v-model="skipMesOnSubscriptionInfo.subscription" placeholder="Please select a subscription">
+            <el-option v-for="sub in subscriptions" :key="sub.name" :label="sub.name" :value="sub.name"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Num of messages" prop="numMes">
+          <el-input v-model.number="skipMesOnSubscriptionInfo.numMes"></el-input>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="skipMesOnSubscription('skipMesOnSubscriptionForm')">Submit</el-button>
+          <el-button @click="skipMesOnSubscriptionVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -328,7 +346,17 @@ export default {
           { required: true, message: 'Please select a subscription', trigger: 'change' }
         ]
       },
-      resetSubscriptionVisible: false
+      resetSubscriptionVisible: false,
+      skipMesOnSubscriptionInfo: {
+        numMes: 0,
+        subscription: ''
+      },
+      skipMesOnSubscriptionRules: {
+        subscription: [
+          { required: true, message: 'Please select a subscription', trigger: 'change' }
+        ]
+      },
+      skipMesOnSubscriptionVisible: false
     }
   },
 
@@ -431,6 +459,9 @@ export default {
         case 'createMissedPartitions':
           this.createMissedPartitions()
           break
+        case 'skipMesOnSubscription':
+          this.skipMesOnSubscriptionVisible = true
+          break
       }
     },
 
@@ -516,7 +547,24 @@ export default {
             message: 'Error: ' + err
           })
         })
-    }
+    },
+    
+    skipMesOnSubscription(formName) {
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+      this.$pulsar.skipMesOnSubscription(topicName, this.skipMesOnSubscriptionInfo.subscription, this.skipMesOnSubscriptionInfo.numMes, this.currentTopic.cluster)
+        .then((resp) => {
+          this.$message({
+            type: 'success',
+            message: 'Skip messages on the subscription successfully!'
+          })
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + err
+          })
+        })
+    },
   },
 
   head() {
