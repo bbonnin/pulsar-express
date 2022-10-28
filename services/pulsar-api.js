@@ -357,4 +357,12 @@ export default $axios => ({
   async rebalanceWorkers(cluster) {
     return await $axios.$put('/api/admin/v2/worker/rebalance?' + getServiceParams(cluster.connection))
   },
+  
+  async fetchWorkerDranStatus(workerId, cluster) {
+    return await $axios.$get('/api/admin/v2/worker/leader/drain?workerId=' + workerId + '&' + getServiceParams(cluster.connection))
+  },
+  
+  async drainWorker(workerId, cluster) {
+    return await $axios.$put('/api/admin/v2/worker/leader/drain?workerId=' + workerId + '&' + getServiceParams(cluster.connection))
+  },
 })
