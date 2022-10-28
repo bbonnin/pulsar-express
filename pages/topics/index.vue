@@ -64,13 +64,13 @@
           width="200">
           <template slot-scope="scope">
             <el-button
-              @click.native.prevent="showDetails(scope.row.id)"
+              @click.native.prevent="showDetails(scope.row)"
               type="primary" plain round
               size="mini">
               Details
             </el-button>
             <el-button
-              @click.native.prevent="deleteTopic(scope.row.id)"
+              @click.native.prevent="deleteTopic(scope.row)"
               type="danger" plain round
               size="mini">
               Delete
@@ -244,18 +244,17 @@ export default {
       })
     },
 
-    deleteTopic(id) {      
+    deleteTopic(ref) {      
       this.$confirm('This will permanently delete the topic. Continue?', 'Warning', {
           confirmButtonText: 'OK',
           cancelButtonText: 'Cancel',
           type: 'warning'
         })
         .then(() => {
-          const topic = this.topics[id]
-          let fullname = topic.persistent ? 'persistent/' : 'non-persistent'
-          fullname += topic.name
+          let fullname = ref.persistent ? 'persistent/' : 'non-persistent'
+          fullname += ref.name
 
-          this.$pulsar.deleteTopic(fullname, topic.cluster)
+          this.$pulsar.deleteTopic(fullname, ref.cluster)
             .then(() => {
               this.$message({
                 type: 'success',
