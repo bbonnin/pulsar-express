@@ -177,15 +177,12 @@ export default {
       this.loading = false
     },
 
-    showDetails(id) {
-      this.setSink(id)
-      const sink = this.sinks[id]
-      this.$router.push({ path: '/sinks/' + sink.cluster.name + '/' + sink.ns.namespace + '/' + sink.sink })
+    showDetails(ref) {
+      this.$router.push({ path: '/sinks/' + ref.cluster.name + '/' + ref.ns.namespace + '/' + ref.sink })
     },
     
-    deleteSink(id) {
-      const sink = this.sinks[id]
-      this.$pulsar.deleteSink(sink.sink, sink.cluster, sink.ns)
+    deleteSink(ref) {
+      this.$pulsar.deleteSink(ref.sink, ref.cluster, ref.ns)
         .then (resp => {
           this.$message({
             type: 'success',
