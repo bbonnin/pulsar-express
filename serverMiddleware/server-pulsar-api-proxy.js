@@ -4,11 +4,6 @@ const connections = require('./connections')
 const fs = require('fs')
 const { createProxyMiddleware } = require('http-proxy-middleware');
 
-// Read client cert options
-ca = process.env.PE_CA_PATH ? fs.readFileSync(process.env.PE_CA_PATH) : null
-cert = process.env.PE_CERT_PATH ? fs.readFileSync(process.env.PE_CERT_PATH) : null
-key = process.env.PE_KEY_PATH ? fs.readFileSync(process.env.PE_KEY_PATH) : null
-
 const app = express()
 /*app.use(express.json())
 
@@ -120,6 +115,7 @@ app.all('/*', (req, res) => {
 app.all(
   '/*',
   createProxyMiddleware({
+    secure: false, // don't verify upstream ssl
     router: function(req) {
       if (req.query['u']) {
         // Remote URL provided by the client
