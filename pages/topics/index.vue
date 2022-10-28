@@ -203,8 +203,7 @@ export default {
         
         this.total = this.filtered.length;
         
-        this.page = Math.min(this.page, Math.ceil(this.total / this.pageSize))
-
+        this.page = Math.max(1, Math.min(this.page, Math.ceil(this.total / this.pageSize)));
         return this.filtered.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page);
     }
   },
