@@ -203,6 +203,18 @@ export default $axios => ({
   async deleteSink(sink, cluster, ns) {
     return await $axios.$delete('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '?' + getServiceParams(cluster.connection, true))
   },
+  
+  async createSink(sink, cluster, formData) {
+    return await $axios.$post(
+      '/api/admin/v3/sinks/' + sink + '?' + getServiceParams(cluster.connection, true),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
+  },
 
   async fetchSourcesNS(namespaces) {
     let sources = []

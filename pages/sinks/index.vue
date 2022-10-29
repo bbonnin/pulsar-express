@@ -101,8 +101,122 @@
     </div>
     
     <div class="button-bar">
+      <el-button type="primary" @click="createSinkVisible = true">Create</el-button>
       <el-button @click="reload()">Reload</el-button>
     </div>
+    
+    <el-dialog title="Create sink" :visible.sync="createSinkVisible">
+      <el-form ref="createSinkForm" :model="createSinkInfo" label-width="200px">
+        <el-form-item label="Type">
+          <el-select v-model="createSinkInfo.archive" placeholder="Please select a sink type" @change="createSinkTypeChanged()">
+            <el-option label="ElasticSearch" value="builtin://elastic_search"></el-option>
+            <el-option label="SQLite (JDBC)" value="builtin://jdbc-sqlite"></el-option>
+            <el-option label="PostgreSQL (JDBC)" value="builtin://jdbc-postgres"></el-option>
+            <el-option label="MariaDB (JDBC)" value="builtin://jdbc-mariadb"></el-option>
+            <el-option label="ClickHouse (JDBC)" value="builtin://jdbc-clickhouse"></el-option>
+            <el-option label="RabbitMQ" value="builtin://rabbitmq"></el-option>
+            <el-option label="Cassandra" value="builtin://cassandra"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Name">
+          <el-input v-model="createSinkInfo.name"></el-input>
+        </el-form-item>
+        <el-form-item label="Tenant">
+          <el-input v-model="createSinkInfo.tenant"></el-input>
+        </el-form-item>
+        <el-form-item label="Namespace">
+          <el-input v-model="createSinkInfo.namespace"></el-input>
+        </el-form-item>
+        <el-form-item label="Topics pattern">
+          <el-input v-model="createSinkInfo.topicsPattern"></el-input>
+        </el-form-item>
+        <el-form-item label="Parallelism">
+          <el-input v-model.number="createSinkInfo.parallelism"></el-input>
+        </el-form-item>
+        <el-form-item label="Processing guarantees">
+          <el-select v-model="createSinkInfo.processingGuarantees">
+            <el-option label="ATLEAST ONCE" value="ATLEAST_ONCE"></el-option>
+            <el-option label="ATMOST ONCE" value="ATMOST_ONCE"></el-option>
+            <el-option label="EFFECTIVELY ONCE" value="EFFECTIVELY_ONCE"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Source subscription position">
+          <el-select v-model="createSinkInfo.sourceSubscriptionPosition">
+            <el-option label="Earliest" value="Earliest"></el-option>
+            <el-option label="Latest" value="Latest"></el-option>
+          </el-select>
+        </el-form-item>
+        <div v-if="createSinkESVisible">
+          <el-form-item label="ElasticSearch URL">
+            <el-input v-model="createSinkInfo.esUrl"></el-input>
+          </el-form-item>
+          <el-form-item label="ES Index Name">
+            <el-input v-model="createSinkInfo.esIndexName"></el-input>
+          </el-form-item>
+          <el-form-item label="ES Create Index If Needed?">
+            <el-checkbox v-model.boolean="createSinkInfo.esCreateIndexIfNeeded"></el-checkbox>
+          </el-form-item>
+        </div>
+        <div v-if="createSinkJDBCVisible">
+          <el-form-item label="JDBC URL">
+            <el-input v-model="createSinkInfo.jdbcUrl"></el-input>
+          </el-form-item>
+          <el-form-item label="JDBC table name">
+            <el-input v-model="createSinkInfo.jdbcTableName"></el-input>
+          </el-form-item>
+        </div>
+        <div v-if="createSinkRabbitVisible">
+          <el-form-item label="Connection Name">
+            <el-input v-model="createSinkInfo.rabbitConnectionName"></el-input>
+          </el-form-item>
+          <el-form-item label="Host">
+            <el-input v-model="createSinkInfo.rabbitHost"></el-input>
+          </el-form-item>
+          <el-form-item label="Virtual host">
+            <el-input v-model="createSinkInfo.rabbitVirtualHost"></el-input>
+          </el-form-item>
+          <el-form-item label="Exchange name">
+            <el-input v-model="createSinkInfo.rabbitExchangeName"></el-input>
+          </el-form-item>
+          <el-form-item label="Exchange type">
+            <el-input v-model="createSinkInfo.rabbitExchangeType"></el-input>
+          </el-form-item>
+          <el-form-item label="Routing key">
+            <el-input v-model="createSinkInfo.rabbitRoutingKey"></el-input>
+          </el-form-item>
+        </div>
+        <div v-if="createSinkCassandraVisible">
+          <el-form-item label="Roots">
+            <el-input v-model="createSinkInfo.cassandraRoots"></el-input>
+          </el-form-item>
+          <el-form-item label="Keyspace">
+            <el-input v-model="createSinkInfo.cassandraKeyspace"></el-input>
+          </el-form-item>
+          <el-form-item label="Keyname">
+            <el-input v-model="createSinkInfo.cassandraKeyname"></el-input>
+          </el-form-item>
+          <el-form-item label="Column family">
+            <el-input v-model="createSinkInfo.cassandraColumnFamily"></el-input>
+          </el-form-item>
+          <el-form-item label="Column name">
+            <el-input v-model="createSinkInfo.cassandraColumnName"></el-input>
+          </el-form-item>
+        </div>
+        <div v-if="createSinkUserPassVisible">
+          <el-form-item label="Username">
+            <el-input v-model="createSinkInfo.username"></el-input>
+          </el-form-item>
+          <el-form-item label="Password">
+            <el-input v-model="createSinkInfo.password"></el-input>
+          </el-form-item>
+        </div>
+        
+        <el-form-item>
+          <el-button type="primary" @click="createSink('createSinkForm')">Create sink</el-button>
+          <el-button @click="createSinkVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -125,7 +239,31 @@ export default {
       sinks: [],
       createVisible: false,
       clusters: [],
-      loading: false
+      loading: false,
+      createSinkVisible: false,
+      createSinkInfo: {
+        archive: null,
+        name: null,
+        tenant: 'public',
+        namespace: 'default',
+        topicsPattern: null,
+        parallelism: 1,
+        processingGuarantees: 'ATLEAST_ONCE',
+        sourceSubscriptionPosition: 'Latest',
+        esUrl: '',
+        esIndexName: '',
+        esCreateIndexIfNeeded: false,
+        
+        jdbcUrl: '',
+        jdbcTableName: '',
+        username: '',
+        password: ''
+      },
+      createSinkESVisible: false,
+      createSinkJDBCVisible: false,
+      createSinkUserPassVisible: false,
+      createSinkRabbitVisible: false,
+      createSinkCassandraVisible: false
     }
   },
 
@@ -196,6 +334,114 @@ export default {
             message: 'Delete error: ' + err
           })
         })
+    },
+    
+    createSink(formName) {
+      var sinkConfig = {
+        archive: this.createSinkInfo.archive,
+        topicsPattern: this.createSinkInfo.topicsPattern,
+        parallelism: this.createSinkInfo.parallelism,
+        processingGuarantees: this.createSinkInfo.processingGuarantees,
+        sourceSubscriptionPosition: this.createSinkInfo.sourceSubscriptionPosition
+      }
+      
+      switch(this.createSinkInfo.archive) {
+        case 'builtin://elastic_search':
+          sinkConfig.configs = {
+            elasticSearchUrl: this.createSinkInfo.esUrl,
+            indexName: this.createSinkInfo.esIndexName,
+            createIndexIfNeeded: this.createSinkInfo.esCreateIndexIfNeeded
+          };
+          break;
+        case 'builtin://jdbc-sqlite':
+          sinkConfig.configs = {
+            jdbcUrl: this.createSinkInfo.jdbcUrl,
+            tablename: this.createSinkInfo.jdbcTableName
+          };
+        case 'builtin://jdbc-postgres':
+        case 'builtin://jdbc-mariadb':
+        case 'builtin://jdbc-clickhouse':
+          sinkConfig.configs = {
+            jdbcUrl: this.createSinkInfo.jdbcUrl,
+            tablename: this.createSinkInfo.jdbcTableName,
+            userName: this.createSinkInfo.username,
+            password: this.createSinkInfo.password
+          };
+          break;
+        case 'builtin://rabbitmq':
+          sinkConfig.configs = {
+            connectionName: this.createSinkInfo.rabbitConnectionName,
+            host: this.createSinkInfo.rabbitHost,
+            virtualHost: this.createSinkInfo.rabbitVirtualHost,
+            username: this.createSinkInfo.username,
+            password: this.createSinkInfo.password,
+            exchangeName: this.createSinkInfo.rabbitExchangeName,
+            exchangeType: this.createSinkInfo.rabbitExchangeType,
+            routingKey: this.createSinkInfo.rabbitRoutingKey
+          };
+          break;
+        case 'builtin://cassandra':
+          sinkConfig.configs = {
+            roots: this.createSinkInfo.cassandraRoots,
+            keyspace: this.createSinkInfo.cassandraKeyspace,
+            columnFamily: this.createSinkInfo.cassandraColumnFamily,
+            keyname: this.createSinkInfo.cassandraKeyname,
+            columnName: this.createSinkInfo.cassandraColumnName
+          };
+          break;
+      }
+      
+      console.log(sinkConfig);
+      
+      const blob = new Blob([JSON.stringify(sinkConfig)], { type: "application/json"});
+      
+      const formData = new FormData();
+      formData.append("sinkConfig", blob)
+      
+      this.$pulsar.createSink(this.createSinkInfo.tenant + '/' + this.createSinkInfo.namespace + '/' + this.createSinkInfo.name, this.clusters[0], formData)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Create new sink successfully!'
+          })
+          this.reload()
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Create error: ' + err
+          })
+        })
+    },
+    
+    createSinkTypeChanged() {
+      this.createSinkESVisible = false;
+      this.createSinkJDBCVisible = false;
+      this.createSinkUserPassVisible = false;
+      this.createSinkRabbitVisible = false;
+      this.createSinkCassandraVisible = false;
+    
+      switch(this.createSinkInfo.archive) {
+        case 'builtin://elastic_search':
+          this.createSinkESVisible = true;
+          break;
+        case 'builtin://jdbc-sqlite':
+          this.createSinkJDBCVisible = true;
+          break;
+        case 'builtin://jdbc-postgres':
+        case 'builtin://jdbc-mariadb':
+        case 'builtin://jdbc-clickhouse':
+          this.createSinkJDBCVisible = true;
+          this.createSinkUserPassVisible = true;
+          break;
+        case 'builtin://rabbitmq':
+          this.createSinkRabbitVisible = true;
+          this.createSinkUserPassVisible = true;
+          break;
+        case 'builtin://cassandra':
+          this.createSinkCassandraVisible = true;
+          break;
+      }
     }
   },
 
