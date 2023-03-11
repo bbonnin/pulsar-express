@@ -242,6 +242,18 @@ export default $axios => ({
   async fetchSource(source, cluster, ns) {
     return await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '/' + source + '?' + getServiceParams(cluster.connection, true))
   },
+  
+  async createSource(source, cluster, formData) {
+    return await $axios.$post(
+      '/api/admin/v3/sources/' + source + '?' + getServiceParams(cluster.connection, true),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
+  },
 
   deleteTopic(topicName, cluster) {
     return $axios.$delete('/api/admin/v2/' + topicName + '?' + getServiceParams(cluster.connection))
