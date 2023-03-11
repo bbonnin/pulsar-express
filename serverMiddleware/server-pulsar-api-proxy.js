@@ -116,6 +116,7 @@ app.all(
   '/*',
   createProxyMiddleware({
     secure: false, // don't verify upstream ssl
+    followRedirects: true,
     router: function(req) {
       if (req.query['u']) {
         // Remote URL provided by the client
