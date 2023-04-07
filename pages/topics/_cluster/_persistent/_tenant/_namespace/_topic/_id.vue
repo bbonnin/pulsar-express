@@ -40,6 +40,75 @@
           :formatter="cellFormatBytesToBestUnit">
         </el-table-column>
       </el-table>
+      
+      <h3>Metadata</h3>
+
+      <div v-if="Object.keys(metadata).length == 0">
+        No metadata
+      </div>
+      <div v-else>
+        <propertyview :props="metadata"></propertyview>
+      </div>
+      
+      <h3>Properties</h3>
+
+      <div v-if="Object.keys(policies).length == 0">
+        No properties
+      </div>
+      <div v-else>
+        <propertyview :props="policies"></propertyview>
+      </div>
+      
+      <div class="button-bar">
+        <el-dropdown @command="handleAction">
+          <el-button type="primary">
+            Topic actions <i class="el-icon-arrow-down el-icon--right"></i>
+          </el-button>
+          <el-dropdown-menu slot="dropdown">
+            <el-dropdown-item command="getLastCommitMessage">Get last commit message</el-dropdown-item>
+            <el-dropdown-item command="getPublishedMessageJustAfter">Get published message just after a time</el-dropdown-item>
+            <el-dropdown-item command="createMissedPartitions">Create missed partitions</el-dropdown-item>
+            <el-dropdown-item command="setTopicDispatchRate">Set dispatch rate</el-dropdown-item>
+          </el-dropdown-menu>
+        </el-dropdown>
+        <el-button @click="reload()">Reload</el-button>
+        <el-button @click="trimTopic()" type="warning">Trim</el-button>
+        <el-button @click="unloadTopic()" type="warning">Unload</el-button>
+        <el-button @click="truncateTopic()" type="danger">Truncate</el-button>
+        <el-button @click="confirmDeleteVisible = true" type="danger">Delete</el-button>
+      </div>
+      
+      <h3>Publishers</h3>
+      <el-table
+          :data="publishers">
+        <el-table-column
+            prop="producerName"
+            label="Name">
+        </el-table-column>
+        <el-table-column
+            prop="accessMode"
+            label="Type">
+        </el-table-column>
+        <el-table-column
+          prop="msgRateIn"
+          label="Msg/s in"
+          :formatter="cellFormatFloat">
+        </el-table-column>
+        <el-table-column
+          prop="msgThroughputIn"
+          label="Byte/s in"
+          :formatter="cellFormatFloat">
+        </el-table-column>
+        <el-table-column
+          prop="averageMsgSize"
+          label="Msg size avg"
+          :formatter="cellFormatFloat">
+        </el-table-column>
+        <el-table-column
+          prop="address"
+          label="Address">
+        </el-table-column>
+      </el-table>
 
       <h3>Subscriptions</h3>
       <el-table
@@ -133,15 +202,13 @@
       <div class="button-bar">
         <el-dropdown @command="handleAction">
           <el-button type="primary">
-            Actions <i class="el-icon-arrow-down el-icon--right"></i>
+            Subscription actions <i class="el-icon-arrow-down el-icon--right"></i>
           </el-button>
           <el-dropdown-menu slot="dropdown">
             <el-dropdown-item command="peekMessages">Peek messages</el-dropdown-item>
-            <el-dropdown-item command="getLastCommitMessage">Get last commit message</el-dropdown-item>
-            <el-dropdown-item command="getPublishedMessageJustAfter">Get published message just after a time</el-dropdown-item>
-            <el-dropdown-item command="resetSubscription">Reset a subscription to a time</el-dropdown-item>
-            <el-dropdown-item command="createMissedPartitions">Create missed partitions</el-dropdown-item>
-            <el-dropdown-item command="skipMesOnSubscription">Skip messages on a subscription</el-dropdown-item>
+            <el-dropdown-item command="resetSubscription">Reset to a time</el-dropdown-item>
+            <el-dropdown-item command="skipMesOnSubscription">Skip messages</el-dropdown-item>
+            <el-dropdown-item command="skipAllMesOnSubscription">Skip all messages</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
         <el-button @click="reload()">Reload</el-button>
@@ -281,6 +348,53 @@
         </el-form-item>
       </el-form>
     </el-dialog>
+    
+    <el-dialog title="Skip all messages on subscription" :visible.sync="skipAllMesOnSubscriptionVisible">
+      <el-form ref="skipAllMesOnSubscriptionForm" :model="skipMesOnSubscriptionInfo" :rules="skipMesOnSubscriptionRules" label-width="200px">
+        <el-form-item label="Subscription" prop="subscription">
+          <el-select v-model="skipMesOnSubscriptionInfo.subscription" placeholder="Please select a subscription">
+            <el-option v-for="sub in subscriptions" :key="sub.name" :label="sub.name" :value="sub.name"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="skipAllMesOnSubscription('skipMesOnSubscriptionForm')">Submit</el-button>
+          <el-button @click="skipAllMesOnSubscriptionVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+    
+    <el-dialog title="Set topic dispatch rate" :visible.sync="setTopicDispatchRateVisible">
+      <el-form ref="setTopicDispatchRateForm" :model="setTopicDispatchRateInfo" :rules="setTopicDispatchRateRules" label-width="200px">
+        <el-form-item label="Throttling rate in byte" prop="dispatchThrottlingRateInByte">
+          <el-input v-model.number="setTopicDispatchRateInfo.dispatchThrottlingRateInByte"></el-input>
+        </el-form-item>
+        <el-form-item label="Throttling rate in msg" prop="dispatchThrottlingRateInMsg">
+          <el-input v-model.number="setTopicDispatchRateInfo.dispatchThrottlingRateInMsg"></el-input>
+        </el-form-item>
+        <el-form-item label="Rate period in seconds" prop="ratePeriodInSecond">
+          <el-input v-model.number="setTopicDispatchRateInfo.ratePeriodInSecond"></el-input>
+        </el-form-item>
+        <el-form-item label="Relative to publish rate?" prop="relativeToPublishRate">
+          <el-checkbox v-model.boolean="setTopicDispatchRateInfo.relativeToPublishRate"></el-checkbox>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="setTopicDispatchRate('setTopicDispatchRateForm')">Submit</el-button>
+          <el-button @click="setTopicDispatchRateVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+    
+    <el-dialog title="Confirm delete" :visible.sync="confirmDeleteVisible">
+      <el-form ref="confirmDeleteForm" :model="confirmDeleteInfo" :rules="confirmDeleteRules" label-width="200px">
+        <el-form-item label="Force delete?" prop="relativeToPublishRate">
+          <el-checkbox v-model.boolean="confirmDeleteInfo.forceDelete"></el-checkbox>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="danger" @click="deleteTopic('confirmDeleteForm')">Delete</el-button>
+          <el-button @click="confirmDeleteVisible = false">Cancel</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -288,6 +402,7 @@
 import { cellFormatFloat, cellFormatBytesToBestUnit, cellFormatDateSince } from '@/services/utils'
 import loading from '@/components/loading'
 import breadcrumb from '@/components/breadcrumb'
+import propertyview from '@/components/property-view'
 import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -296,13 +411,15 @@ export default {
   layout: 'dataview',
 
   components: {
-    loading, breadcrumb
+    loading, breadcrumb, propertyview
   },
 
   data() {
     return {
       loading: false,
       stats: null,
+      metadata: {},
+      policies: {},
       lastMessages: [],
       peekMessagesVisible: false,
       peekMessagesInfo: {
@@ -356,7 +473,29 @@ export default {
           { required: true, message: 'Please select a subscription', trigger: 'change' }
         ]
       },
-      skipMesOnSubscriptionVisible: false
+      skipMesOnSubscriptionVisible: false,
+      skipAllMesOnSubscriptionVisible: false,
+      setTopicDispatchRateInfo: {
+        dispatchThrottlingRateInByte: 0,
+        dispatchThrottlingRateInMsg: 0,
+        ratePeriodInSecond: 0,
+        relativeToPublishRate: false
+      },
+      setTopicDispatchRateInfo: {
+        dispatchThrottlingRateInByte: 0,
+        dispatchThrottlingRateInMsg: 0,
+        ratePeriodInSecond: 0,
+        relativeToPublishRate: false
+      },
+      setTopicDispatchRateRules: {
+      },
+      setTopicDispatchRateVisible: false,
+      confirmDeleteInfo: {
+        forceDelete: false
+      },
+      confirmDeleteRules: {
+      },
+      confirmDeleteVisible: false
     }
   },
 
@@ -394,6 +533,13 @@ export default {
     subscriptions() {
       if (this.stats) {
         return this._.map(this.stats.subscriptions, (infos, name) => ({ name, ...infos}))
+      }
+      return []
+    },
+    
+    publishers() {
+      if (this.stats) {
+        return this._.map(this.stats.publishers, (infos) => ({ ...infos}))
       }
       return []
     }
@@ -438,6 +584,37 @@ export default {
       this.setTopic(0)
       this.stats = this.currentTopic.stats
       
+      const topicOriginName = this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic.replace(/-partition-[0-9]$/, '');
+      
+      this.policies = {
+        policies: {
+          subscriptionDispatchRate: await this.$pulsar.fetchTopicDispatchRateConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+          retention: await this.$pulsar.fetchTopicRetentionConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+          persistence: await this.$pulsar.fetchTopicPersistenceConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+          TTL: await this.$pulsar.fetchTopicTTLConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+          maxSubscription: await this.$pulsar.fetchTopicMaxSubscriptionsConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+          maxProducer: await this.$pulsar.fetchTopicMaxProducersConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+          maxMessageSize: await this.$pulsar.fetchTopicMaxMessageSizeConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+          inactivePolicies: await this.$pulsar.fetchTopicInactivePoliciesConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+          delayedDelivery: await this.$pulsar.fetchTopicDelayedDeliveryConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+          deduplication: await this.$pulsar.fetchTopicDeduplicationConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+          compationThreshold: await this.$pulsar.fetchTopicCompationThresholdConfig(this.$route.params.persistent + '/' + topicOriginName, cluster)
+        },
+        stats: this.currentTopic.stats
+      };
+      if (this.policies.stats.publishers) {
+        this.policies.stats.publishers = Object.assign({}, this.policies.stats.publishers)
+      }
+      
+      this.metadata = await this.$pulsar.fetchTopicMetadata(this.$route.params.persistent + '/' + topicOriginName, cluster)
+      // convert array property to object
+      for(let obj in this.metadata.partitions) {
+        this.metadata.partitions[obj].ledgers = Object.assign({}, this.metadata.partitions[obj].ledgers)
+      }
+      if (this.metadata.ledgers) {
+        this.metadata.ledgers = Object.assign({}, this.metadata.ledgers)
+      }
+      
       this.loading = false
     },
 
@@ -461,6 +638,19 @@ export default {
           break
         case 'skipMesOnSubscription':
           this.skipMesOnSubscriptionVisible = true
+          break
+        case 'setTopicDispatchRate':
+          const topicOriginName = this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic.replace(/-partition-[0-9]$/, '');
+          let self = this;
+          this.$pulsar.fetchTopicDispatchRateConfig(this.$route.params.persistent + '/' + topicOriginName, this.currentTopic.cluster).then((info) => {
+            if (info) {
+              self.setTopicDispatchRateInfo = info
+            }
+            self.setTopicDispatchRateVisible = true
+          })
+          break
+        case 'skipAllMesOnSubscription':
+          this.skipAllMesOnSubscriptionVisible = true
           break
       }
     },
@@ -533,7 +723,7 @@ export default {
     },
     
     createMissedPartitions() {
-      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name.replace(/-partition-[0-9]+$/, '')
       this.$pulsar.createMissedPartitions(topicName, this.currentTopic.cluster)
         .then((resp) => {
           this.$message({
@@ -563,6 +753,129 @@ export default {
             type: 'error',
             message: 'Error: ' + err
           })
+        })
+    },
+    
+    skipAllMesOnSubscription(formName) {
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+      this.$pulsar.skipAllMesOnSubscription(topicName, this.skipMesOnSubscriptionInfo.subscription, this.currentTopic.cluster)
+        .then((resp) => {
+          this.$message({
+            type: 'success',
+            message: 'Skip all messages on the subscription successfully!'
+          })
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + err
+          })
+        })
+    },
+    
+    setTopicDispatchRate(formName) {
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name.replace(/-partition-[0-9]+$/, '')
+      this.$pulsar.setTopicDispatchRate(topicName, this.setTopicDispatchRateInfo, this.currentTopic.cluster)
+        .then((resp) => {
+          this.$message({
+            type: 'success',
+            message: 'Set topic dispatch rate successfully!'
+          })
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + err
+          })
+        })
+    },
+    
+    deleteTopic(formName) {      
+      const fullname = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+
+      this.$pulsar.deleteTopic(fullname, this.currentTopic.cluster, this.confirmDeleteInfo.forceDelete)
+        .then(() => {
+          this.$message({
+            type: 'success',
+            message: 'Delete completed'
+          })
+          this.reload()
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Delete error: ' + err
+          })
+        })
+    },
+    
+    truncateTopic() {      
+      this.$confirm('This will truncate topic, data may be lost. Continue?', 'Warning', {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        })
+        .then(() => {
+          const fullname = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+
+          this.$pulsar.truncateTopic(fullname, this.currentTopic.cluster)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Truncate completed'
+              })
+              this.reload()
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Truncate error: ' + err
+              })
+            })
+        })
+    },
+    
+    trimTopic() {
+      const fullname = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+
+      this.$pulsar.trimTopic(fullname, this.currentTopic.cluster)
+        .then(() => {
+          this.$message({
+            type: 'success',
+            message: 'Trim completed'
+          })
+          this.reload()
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Trim error: ' + err
+          })
+        })
+    },
+    
+    unloadTopic() {      
+      this.$confirm('This will unload topic, topic will be assign to another broker. While assigning, the topic may be inaccessible. Continue?', 'Warning', {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        })
+        .then(() => {
+          const fullname = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+
+          this.$pulsar.unloadTopic(fullname, this.currentTopic.cluster)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Unload completed'
+              })
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Unload error: ' + err
+              })
+            })
         })
     },
   },
