@@ -23,13 +23,19 @@
         <el-table-column
           fixed="right"
           label="Actions"
-          width="200">
+          width="300">
           <template slot-scope="scope">
             <el-button
               @click.native.prevent="showDetails(scope.row.id)"
               type="primary" plain round
               size="mini">
               Details
+            </el-button>
+            <el-button
+              @click.native.prevent="unloadNamespace(scope.row.id)"
+              type="warning" plain round
+              size="mini">
+              Unload
             </el-button>
             <el-button
               @click.native.prevent="deleteNamespace(scope.row.id)"
@@ -175,6 +181,32 @@ export default {
               this.$message({
                 type: 'error',
                 message: 'Delete error: ' + err
+              })
+            })
+        })
+    },
+    
+    unloadNamespace(id) {      
+      this.$confirm('Performing this operation will let the broker removes all producers, consumers, and connections using this namespace, and close all topics (including their persistent store). During that operation, the namespace is marked as tentatively unavailable until the broker completes the unloading action. This operation would result in non-persistent message loss and unexpected connection closure to the clients. Continue?', 'Warning', {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        })
+        .then(() => {
+          const ns = this.namespaces[id]
+
+          this.$pulsar.unloadNamespace(ns.namespace, ns.cluster)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Unload completed'
+              })
+              this.reload()
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Unload error: ' + err
               })
             })
         })

@@ -76,10 +76,6 @@ export default $axios => ({
     return await $axios.$get('/api/admin/v2/' + topic + '/inactiveTopicPolicies?' + getServiceParams(cluster.connection))
   },
   
-  async fetchTopicInactivePoliciesConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/inactiveTopicPolicies?' + getServiceParams(cluster.connection))
-  },
-  
   async fetchTopicDelayedDeliveryConfig(topic, cluster) {
     return await $axios.$get('/api/admin/v2/' + topic + '/delayedDelivery?' + getServiceParams(cluster.connection))
   },
@@ -102,6 +98,10 @@ export default $axios => ({
 
   async fetchNamespace(ns, cluster) {
     return await $axios.$get('/api/admin/v2/namespaces/' + ns + '?' + getServiceParams(cluster.connection))
+  },
+  
+  async unloadNamespace(ns, cluster) {
+    return await $axios.$put('/api/admin/v2/namespaces/' + ns + '/unload?' + getServiceParams(cluster.connection))
   },
 
   async fetchBrokers(clusters) {
