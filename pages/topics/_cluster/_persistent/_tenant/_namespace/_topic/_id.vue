@@ -380,6 +380,7 @@
         <el-form-item>
           <el-button type="primary" @click="setTopicDispatchRate('setTopicDispatchRateForm')">Submit</el-button>
           <el-button @click="setTopicDispatchRateVisible = false">Close</el-button>
+          <el-button type="danger" @click="deleteTopicDispatchRate('setTopicDispatchRateForm')">Unset</el-button>
         </el-form-item>
       </el-form>
     </el-dialog>
@@ -781,6 +782,25 @@ export default {
             type: 'success',
             message: 'Set topic dispatch rate successfully!'
           })
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + err
+          })
+        })
+    },
+    
+    deleteTopicDispatchRate(formName) {
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name.replace(/-partition-[0-9]+$/, '')
+      self = this
+      this.$pulsar.deleteTopicDispatchRate(topicName, this.currentTopic.cluster)
+        .then((resp) => {
+          this.$message({
+            type: 'success',
+            message: 'Unset topic dispatch rate successfully!'
+          })
+          self.setTopicDispatchRateVisible = false
         })
         .catch ((err) => {
           this.$message({

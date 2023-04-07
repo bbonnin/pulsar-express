@@ -376,6 +376,10 @@ export default $axios => ({
   async setTopicDispatchRate(topicName, dispatchRateInfo, cluster) {
     return await $axios.$post('/api/admin/v2/' + topicName + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection), dispatchRateInfo)
   },
+  
+  async deleteTopicDispatchRate(topicName, cluster) {
+    return await $axios.$delete('/api/admin/v2/' + topicName + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection))
+  },
 
   async fetchBrokers(clusters) {
     let brokers = []
