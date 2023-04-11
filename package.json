@@ -32,6 +32,7 @@
     "dotenv": "^8.0.0",
     "element-theme-chalk": "^2.11.1",
     "element-ui": "^2.11.1",
+    "http-proxy-middleware": "^2.0.6",
     "nuxt": "^2.10.2",
     "request": "^2.88.0",
     "vue-lodash": "^2.0.2",

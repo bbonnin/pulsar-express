@@ -2,14 +2,10 @@ const express = require('express')
 const request = require('request')
 const connections = require('./connections')
 const fs = require('fs')
-
-// Read client cert options
-ca = process.env.PE_CA_PATH ? fs.readFileSync(process.env.PE_CA_PATH) : null
-cert = process.env.PE_CERT_PATH ? fs.readFileSync(process.env.PE_CERT_PATH) : null
-key = process.env.PE_KEY_PATH ? fs.readFileSync(process.env.PE_KEY_PATH) : null
+const { createProxyMiddleware } = require('http-proxy-middleware');
 
 const app = express()
-app.use(express.json())
+/*app.use(express.json())
 
 app.all('/*', (req, res) => {
   let url = null
@@ -34,6 +30,11 @@ app.all('/*', (req, res) => {
       }
 
       token = foundConnection[0].token
+      
+      query = Object.keys(req.query).filter(el => !['u', 'n', 't', 'e'].includes(el)).map(k => k + '=' + req.query[k]).join('&')
+      if (query) {
+        url += '?' + query
+      }
     }
     else {
       noConnectionMsg = 'no connection named "' + req.query['n'] + '"'
@@ -56,7 +57,8 @@ app.all('/*', (req, res) => {
         'Authorization': 'Bearer ' + token.trim()
       }
     }
-
+    
+    console.log(req);
     if ((req.method == 'POST' || req.method == 'PUT')  && req.body && Object.keys(req.body).length > 0) {
       reqOptions.body = JSON.stringify(req.body)
 
@@ -108,7 +110,71 @@ app.all('/*', (req, res) => {
       })
       .pipe(res)
     }
-})
+})*/
+
+app.all(
+  '/*',
+  createProxyMiddleware({
+    secure: false, // don't verify upstream ssl
+    followRedirects: true,
+    router: function(req) {
+      if (req.query['u']) {
+        // Remote URL provided by the client
+        return req.query['u'];
+      }
+      else if (req.query['n']) {
+        const foundConnection = connections.filter(conn => conn.name == req.query['n'])
+        
+        if (foundConnection.length > 0) {
+          if (req.query['e'] == 'fct') {
+            return foundConnection[0].fctWorkerUrl;
+          }
+          else {
+            return foundConnection[0].url;
+          }
+        }
+      }
+    },
+    pathRewrite: function(path, req) {
+      console.log(req.params);
+      let ret = req.params['0'];
+      
+      if (req.query['n']) {
+        //Reserve client query because some APIs need them
+        query = Object.keys(req.query).filter(el => !['u', 'n', 't', 'e'].includes(el)).map(k => k + '=' + req.query[k]).join('&')
+        if (query) {
+          ret += '?' + query;
+        }
+      }
+      
+      return ret;
+    },
+    on: {
+      proxyReq: (proxyReq, req, res) => {
+        let token = null;
+        if (req.query['u']) {
+          // Remote URL provided by the client
+          token = req.query['t']
+        }
+        else if (req.query['n']) {
+          // The client has only provided a name, so get the url from the configuration
+          const foundConnection = connections.filter(conn => conn.name == req.query['n'])
+          
+          if (foundConnection.length > 0) {
+            token = foundConnection[0].token
+          }
+        }
+        
+        if (token) {
+          // Adding a trim because tokens from k8s secrets
+          // can have trailing newlines
+          proxyReq.setHeader('Authorization', 'Bearer ' + token.trim());
+        }
+      }
+    }
+  })
+);
+
 
 module.exports = {
   path: '/api',

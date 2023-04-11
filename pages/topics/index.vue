@@ -64,13 +64,13 @@
           width="200">
           <template slot-scope="scope">
             <el-button
-              @click.native.prevent="showDetails(scope.row.id)"
+              @click.native.prevent="showDetails(scope.row)"
               type="primary" plain round
               size="mini">
               Details
             </el-button>
             <el-button
-              @click.native.prevent="deleteTopic(scope.row.id)"
+              @click.native.prevent="deleteTopic(scope.row)"
               type="danger" plain round
               size="mini">
               Delete
@@ -203,8 +203,7 @@ export default {
         
         this.total = this.filtered.length;
         
-        this.page = Math.min(this.page, Math.ceil(this.total / this.pageSize))
-
+        this.page = Math.max(1, Math.min(this.page, Math.ceil(this.total / this.pageSize)));
         return this.filtered.slice(this.pageSize * this.page - this.pageSize, this.pageSize * this.page);
     }
   },
@@ -245,18 +244,17 @@ export default {
       })
     },
 
-    deleteTopic(id) {      
+    deleteTopic(ref) {      
       this.$confirm('This will permanently delete the topic. Continue?', 'Warning', {
           confirmButtonText: 'OK',
           cancelButtonText: 'Cancel',
           type: 'warning'
         })
         .then(() => {
-          const topic = this.topics[id]
-          let fullname = topic.persistent ? 'persistent/' : 'non-persistent'
-          fullname += topic.name
+          let fullname = ref.persistent ? 'persistent/' : 'non-persistent'
+          fullname += ref.name
 
-          this.$pulsar.deleteTopic(fullname, topic.cluster)
+          this.$pulsar.deleteTopic(fullname, ref.cluster)
             .then(() => {
               this.$message({
                 type: 'success',

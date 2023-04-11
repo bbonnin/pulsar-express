@@ -40,12 +40,68 @@ export default $axios => ({
     return await $axios.$get('/api/admin/v2/' + topic + '/stats?' + getServiceParams(cluster.connection))
   },
   
+  async fetchTopicDispatchRateConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicRetentionConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/retention?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicPersistenceConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/persistence?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicOffloadConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/offloadPolicies?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicTTLConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/messageTTL?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicMaxSubscriptionsConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/maxSubscriptionsPerTopic?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicMaxProducersConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/maxProducers?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicMaxMessageSizeConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/maxMessageSize?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicInactivePoliciesConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/inactiveTopicPolicies?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicDelayedDeliveryConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/delayedDelivery?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicDeduplicationConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/deduplicationEnabled?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicCompationThresholdConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/compactionThreshold?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchTopicMetadata(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/internal-info?' + getServiceParams(cluster.connection))
+  },
+  
   async deleteFunction(fctName, cluster) {
     return await $axios.$delete('/api/admin/v3/functions/' + fctName + '?' + getServiceParams(cluster.connection, true))
   },
 
   async fetchNamespace(ns, cluster) {
     return await $axios.$get('/api/admin/v2/namespaces/' + ns + '?' + getServiceParams(cluster.connection))
+  },
+  
+  async unloadNamespace(ns, cluster) {
+    return await $axios.$put('/api/admin/v2/namespaces/' + ns + '/unload?' + getServiceParams(cluster.connection))
   },
 
   async fetchBrokers(clusters) {
@@ -203,6 +259,18 @@ export default $axios => ({
   async deleteSink(sink, cluster, ns) {
     return await $axios.$delete('/api/admin/v3/sinks/' + ns.namespace + '/' + sink + '?' + getServiceParams(cluster.connection, true))
   },
+  
+  async createSink(sink, cluster, formData) {
+    return await $axios.$post(
+      '/api/admin/v3/sinks/' + sink + '?' + getServiceParams(cluster.connection, true),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
+  },
 
   async fetchSourcesNS(namespaces) {
     let sources = []
@@ -230,9 +298,33 @@ export default $axios => ({
   async fetchSource(source, cluster, ns) {
     return await $axios.$get('/api/admin/v3/sources/' + ns.namespace + '/' + source + '?' + getServiceParams(cluster.connection, true))
   },
+  
+  async createSource(source, cluster, formData) {
+    return await $axios.$post(
+      '/api/admin/v3/sources/' + source + '?' + getServiceParams(cluster.connection, true),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
+  },
 
-  deleteTopic(topicName, cluster) {
-    return $axios.$delete('/api/admin/v2/' + topicName + '?' + getServiceParams(cluster.connection))
+  deleteTopic(topicName, cluster, isForce) {
+    return $axios.$delete('/api/admin/v2/' + topicName + '?force=' + (isForce ? 'true' : 'false') + '&' + getServiceParams(cluster.connection))
+  },
+  
+  unloadTopic(topicName, cluster) {
+    return $axios.$put('/api/admin/v2/' + topicName + '/unload?' + getServiceParams(cluster.connection))
+  },
+  
+  truncateTopic(topicName, cluster) {
+    return $axios.$delete('/api/admin/v2/' + topicName + '/truncate?' + getServiceParams(cluster.connection))
+  },
+  
+  trimTopic(topicName, cluster) {
+    return $axios.$post('/api/admin/v2/' + topicName + '/trim?' + getServiceParams(cluster.connection))
   },
 
   createTopic(topicName, cluster) {
@@ -271,6 +363,22 @@ export default $axios => ({
   
   async createMissedPartitions(topicName, cluster) {
     return await $axios.$post('/api/admin/v2/' + topicName + '/createMissedPartitions?' + getServiceParams(cluster.connection))
+  },
+  
+  async skipMesOnSubscription(topicName, subName, numMessages, cluster) {
+    return await $axios.$post('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '/skip/' + numMessages + '?' + getServiceParams(cluster.connection))
+  },
+  
+  async skipAllMesOnSubscription(topicName, subName, cluster) {
+    return await $axios.$post('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '/skip_all?' + getServiceParams(cluster.connection))
+  },
+  
+  async setTopicDispatchRate(topicName, dispatchRateInfo, cluster) {
+    return await $axios.$post('/api/admin/v2/' + topicName + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection), dispatchRateInfo)
+  },
+  
+  async deleteTopicDispatchRate(topicName, cluster) {
+    return await $axios.$delete('/api/admin/v2/' + topicName + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection))
   },
 
   async fetchBrokers(clusters) {
@@ -352,5 +460,13 @@ export default $axios => ({
   
   async rebalanceWorkers(cluster) {
     return await $axios.$put('/api/admin/v2/worker/rebalance?' + getServiceParams(cluster.connection))
+  },
+  
+  async fetchWorkerDranStatus(workerId, cluster) {
+    return await $axios.$get('/api/admin/v2/worker/leader/drain?workerId=' + workerId + '&' + getServiceParams(cluster.connection))
+  },
+  
+  async drainWorker(workerId, cluster) {
+    return await $axios.$put('/api/admin/v2/worker/leader/drain?workerId=' + workerId + '&' + getServiceParams(cluster.connection))
   },
 })
