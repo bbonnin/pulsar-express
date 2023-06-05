@@ -1,7 +1,7 @@
 <template>
   <div class="breadcrumb-container">
     <el-breadcrumb separator=">" class="breadcrumb">
-      <img class="el-breadcrumb-img" :src="img" width="32"/>
+      <img class="el-breadcrumb-img" :src="img" width="32" />
       <el-breadcrumb-item v-for="item in items" :key="item.path" :to="{ path: item.path }">{{ item.label }}</el-breadcrumb-item>
     </el-breadcrumb>
   </div>
@@ -9,19 +9,23 @@
 
 <script>
 export default {
-  name: 'breadcrumb',
+  name: "breadcrumb",
 
-  props: [ 'items' ],
+  props: ["items"],
 
   computed: {
     img() {
-      const path = this.$route.path
-      const idxSlash = path.indexOf('/', 1)
-      return require('~/assets' + path.substring(0, idxSlash == -1 ? path.length : idxSlash) + '.png')
-
-    }
-  }
-}
+      const path = this.$route.path;
+      const idxSlash = path.indexOf("/", 1);
+      try {
+        return require("~/assets" + path.substring(0, idxSlash == -1 ? path.length : idxSlash) + ".png");
+      } catch (e) {
+        console.warn("⚠️ Could not require image", "~/assets" + path.substring(0, idxSlash == -1 ? path.length : idxSlash) + ".png");
+        return;
+      }
+    },
+  },
+};
 </script>
 
 <style scoped>
