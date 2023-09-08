@@ -356,14 +356,14 @@ export default {
         case 'builtin://jdbc-sqlite':
           sinkConfig.configs = {
             jdbcUrl: this.createSinkInfo.jdbcUrl,
-            tablename: this.createSinkInfo.jdbcTableName
+            tableName: this.createSinkInfo.jdbcTableName
           };
         case 'builtin://jdbc-postgres':
         case 'builtin://jdbc-mariadb':
         case 'builtin://jdbc-clickhouse':
           sinkConfig.configs = {
             jdbcUrl: this.createSinkInfo.jdbcUrl,
-            tablename: this.createSinkInfo.jdbcTableName,
+            tableName: this.createSinkInfo.jdbcTableName,
             userName: this.createSinkInfo.username,
             password: this.createSinkInfo.password
           };
