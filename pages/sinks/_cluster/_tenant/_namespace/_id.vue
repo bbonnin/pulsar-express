@@ -63,6 +63,7 @@
       </p>
       <div class="button-bar">
         <el-button @click="reload()">Reload</el-button>
+        <el-button @click="updateSinkVisible = true">Update</el-button>
         <el-button type="success" @click="startAllInstances()">Start all instances</el-button>
         <el-button type="warning" @click="stopAllInstances()">Stop all instances</el-button>
         <el-button type="danger" @click="deleteSink()">Delete</el-button>
@@ -76,6 +77,32 @@
         show-icon>
       </el-alert>
     </div>
+    
+    <el-dialog title="Edit sink" :visible.sync="updateSinkVisible">
+      <el-form ref="updateSinkForm" :model="updateSinkInfo" label-width="200px">
+        <el-form-item label="Parallelism">
+          <el-input v-model.number="updateSinkInfo.parallelism"></el-input>
+        </el-form-item>
+        <el-form-item label="Processing guarantees">
+          <el-select v-model="updateSinkInfo.processingGuarantees">
+            <el-option label="ATLEAST ONCE" value="ATLEAST_ONCE"></el-option>
+            <el-option label="ATMOST ONCE" value="ATMOST_ONCE"></el-option>
+            <el-option label="EFFECTIVELY ONCE" value="EFFECTIVELY_ONCE"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Source subscription position">
+          <el-select v-model="updateSinkInfo.sourceSubscriptionPosition">
+            <el-option label="Earliest" value="Earliest"></el-option>
+            <el-option label="Latest" value="Latest"></el-option>
+          </el-select>
+        </el-form-item>
+        
+        <el-form-item>
+          <el-button type="primary" @click="updateSink('updateSinkForm')">Update sink</el-button>
+          <el-button @click="updateSinkVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -97,7 +124,13 @@ export default {
   data() {
     return {
       policies: [],
-      instances: []
+      instances: [],
+      updateSinkVisible: false,
+      updateSinkInfo: {
+        parallelism: 1,
+        processingGuarantees: 'ATLEAST_ONCE',
+        sourceSubscriptionPosition: 'Latest'
+      },
     }
   },
 
@@ -205,7 +238,40 @@ export default {
       const status = await this.$pulsar.fetchSinkStatus(this.currentSink.sink, cluster, this.currentSink.ns)
       this.instances = status.instances
       this.policies = await this.$pulsar.fetchSink(this.currentSink.sink, cluster, this.currentSink.ns)
-    }
+      
+      // Set default value of update form to current sink properties
+      this.updateSinkInfo.parallelism = this.policies.parallelism
+      this.updateSinkInfo.processingGuarantees = this.policies.processingGuarantees
+      this.updateSinkInfo.sourceSubscriptionPosition = this.policies.sourceSubscriptionPosition;
+    },
+    
+    updateSink(formName) {
+      var sinkConfig = {
+        parallelism: this.updateSinkInfo.parallelism,
+        processingGuarantees: this.updateSinkInfo.processingGuarantees,
+        sourceSubscriptionPosition: this.updateSinkInfo.sourceSubscriptionPosition
+      }
+      
+      const blob = new Blob([JSON.stringify(sinkConfig)], { type: "application/json"});
+      
+      const formData = new FormData();
+      formData.append("sinkConfig", blob)
+      
+      this.$pulsar.updateSink(this.currentSink.ns.namespace + '/' + this.currentSink.sink, this.currentSink.cluster, formData)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Update sink successfully!'
+          })
+          this.reload()
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Update sink error: ' + err
+          })
+        })
+    },
   },
 
   head() {

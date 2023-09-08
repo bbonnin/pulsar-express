@@ -271,6 +271,18 @@ export default $axios => ({
       }
     )
   },
+  
+  async updateSink(sink, cluster, formData) {
+    return await $axios.$put(
+      '/api/admin/v3/sinks/' + sink + '?' + getServiceParams(cluster.connection, true),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
+  },
 
   async fetchSourcesNS(namespaces) {
     let sources = []
