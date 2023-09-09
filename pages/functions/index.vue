@@ -175,7 +175,7 @@ export default {
     
     deleteFunction(id) {
       const func = this.functions[id]
-      this.$pulsar.deleteFunction(func.fullname, func.currentFunction.cluster)
+      this.$pulsar.deleteFunction(func.infos.tenant + '/' + func.infos.namespace + '/' + func.infos.name, func.cluster)
         .then (resp => {
           this.$message({
             type: 'success',
