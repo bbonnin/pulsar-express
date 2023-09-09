@@ -410,7 +410,6 @@ export default {
           break;
         case 'external://jar':
           sinkConfig.className = this.createSinkInfo.className;
-          sinkConfig.runtime = "JAVA";
           break;
       }
       
