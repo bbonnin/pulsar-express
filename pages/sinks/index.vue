@@ -124,11 +124,11 @@
             <input type="file" @change="selectJarFileChange"></input>
           </el-form-item>
           <el-form-item label="JAR Classname">
-            <el-input v-model="createSinkInfo.className"></el-input>
+            <el-input v-model="createSinkInfo.className" placeholder="com.example.java.class.ExampleSink"></el-input>
           </el-form-item>
         </div>
         <el-form-item label="Name">
-          <el-input v-model="createSinkInfo.name"></el-input>
+          <el-input v-model="createSinkInfo.name" placeholder="example_sink_name"></el-input>
         </el-form-item>
         <el-form-item label="Tenant">
           <el-input v-model="createSinkInfo.tenant"></el-input>
@@ -137,7 +137,7 @@
           <el-input v-model="createSinkInfo.namespace"></el-input>
         </el-form-item>
         <el-form-item label="Topics pattern">
-          <el-input v-model="createSinkInfo.topicsPattern"></el-input>
+          <el-input v-model="createSinkInfo.topicsPattern" placeholder="public/default/topic"></el-input>
         </el-form-item>
         <el-form-item label="Parallelism">
           <el-input v-model.number="createSinkInfo.parallelism"></el-input>
