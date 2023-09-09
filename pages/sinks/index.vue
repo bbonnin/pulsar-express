@@ -116,7 +116,7 @@
             <el-option label="ClickHouse (JDBC)" value="builtin://jdbc-clickhouse"></el-option>
             <el-option label="RabbitMQ" value="builtin://rabbitmq"></el-option>
             <el-option label="Cassandra" value="builtin://cassandra"></el-option>
-            <el-option label="External JAR" value="external://jar"></el-option>
+            <el-option label="Upload JAR" value="external://jar"></el-option>
           </el-select>
         </el-form-item>
         <div v-if="createSinkJarVisible">
