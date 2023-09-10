@@ -130,7 +130,7 @@ export default {
         parallelism: 1,
         processingGuarantees: 'ATLEAST_ONCE',
         sourceSubscriptionPosition: 'Latest'
-      },
+      }
     }
   },
 
