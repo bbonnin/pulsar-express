@@ -95,6 +95,18 @@ export default $axios => ({
   async deleteFunction(fctName, cluster) {
     return await $axios.$delete('/api/admin/v3/functions/' + fctName + '?' + getServiceParams(cluster.connection, true))
   },
+  
+  async createFunction(func, cluster, formData) {
+    return await $axios.$post(
+      '/api/admin/v3/functions/' + func + '?' + getServiceParams(cluster.connection, true),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
+  },
 
   async fetchNamespace(ns, cluster) {
     return await $axios.$get('/api/admin/v2/namespaces/' + ns + '?' + getServiceParams(cluster.connection))
