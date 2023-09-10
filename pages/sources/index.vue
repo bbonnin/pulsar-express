@@ -347,7 +347,7 @@ export default {
         .catch (err => {
           this.$message({
             type: 'error',
-            message: 'Create error: ' + err
+            message: 'Create error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },

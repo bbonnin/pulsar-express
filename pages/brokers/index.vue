@@ -102,7 +102,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Health check error: ' + err
+            message: 'Health check error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     }

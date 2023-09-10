@@ -194,7 +194,7 @@ export default {
             .catch ((err) => {
               this.$message({
                 type: 'error',
-                message: 'Update error: ' + err
+                message: 'Update error: ' + (err.response && err.response.data && err.response.data.reason || err)
               })
             })
           this.configVisible = false
@@ -222,7 +222,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Error: ' + err
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     }

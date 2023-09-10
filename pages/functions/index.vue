@@ -186,7 +186,7 @@ export default {
         .catch (err => {
           this.$message({
             type: 'error',
-            message: 'Delete error: ' + err
+            message: 'Delete error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },

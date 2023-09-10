@@ -160,7 +160,7 @@ export default {
             .catch ((err) => {
               this.$message({
                 type: 'error',
-                message: 'Delete error: ' + err
+                message: 'Delete error: ' + (err.response && err.response.data && err.response.data.reason || err)
               })
             })
         })
@@ -180,7 +180,7 @@ export default {
             .catch ((err) => {
               this.$message({
                 type: 'error',
-                message: 'Creation error: ' + err
+                message: 'Creation error: ' + (err.response && err.response.data && err.response.data.reason || err)
               })
             })
           this.createVisible = false
