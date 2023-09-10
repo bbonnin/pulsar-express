@@ -106,6 +106,18 @@ export default $axios => ({
         }
       }
     )
+  },  
+  
+  async updateFunction(func, cluster, formData) {
+    return await $axios.$put(
+      '/api/admin/v3/functions/' + func + '?' + getServiceParams(cluster.connection, true),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
   },
 
   async fetchNamespace(ns, cluster) {

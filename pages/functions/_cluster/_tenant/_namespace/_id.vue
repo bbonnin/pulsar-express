@@ -119,6 +119,7 @@
       </p>
       <div class="button-bar">
         <el-button @click="reload()">Reload</el-button>
+        <el-button @click="updateFunctionVisible = true">Update</el-button>
         <el-button type="success" @click="startAllInstances()">Start all instances</el-button>
         <el-button type="warning" @click="stopAllInstances()">Stop all instances</el-button>
         <el-button type="danger" @click="deleteFunction()">Delete</el-button>
@@ -132,6 +133,19 @@
         show-icon>
       </el-alert>
     </div>
+    
+    <el-dialog title="Update function" :visible.sync="updateFunctionVisible">
+      <el-form ref="updateFunctionForm" :model="updateFunctionInfo" label-width="200px">
+        <el-form-item label="Parallelism">
+          <el-input v-model.number="updateFunctionInfo.parallelism"></el-input>
+        </el-form-item>
+        
+        <el-form-item>
+          <el-button type="primary" @click="updateFunction('updateFunctionForm')">Update function</el-button>
+          <el-button @click="updateFunctionVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -151,7 +165,11 @@ export default {
 
   data() {
     return {
-      instances: []
+      instances: [],
+      updateFunctionVisible: false,
+      updateFunctionInfo: {
+        parallelism: 1
+      }
     }
   },
 
@@ -274,7 +292,33 @@ export default {
             message: 'Delete error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
-    }
+    },
+    
+    updateFunction(formName) {
+      var sinkConfig = {
+        parallelism: this.updateFunctionInfo.parallelism
+      }
+      
+      const blob = new Blob([JSON.stringify(sinkConfig)], { type: "application/json"});
+      
+      const formData = new FormData();
+      formData.append("functionConfig", blob)
+      
+      this.$pulsar.updateFunction(this.fullname, this.currentFunction.cluster, formData)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Update function successfully!'
+          })
+          this.reload()
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Update function error: ' + (err.response && err.response.data && err.response.data.reason || err)
+          })
+        })
+    },
   },
 
   head() {
