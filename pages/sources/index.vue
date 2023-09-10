@@ -59,10 +59,19 @@
             <el-option label="File" value="builtin://file"></el-option>
             <el-option label="Netty" value="builtin://netty"></el-option>
             <el-option label="RabbitMQ" value="builtin://rabbitmq"></el-option>
+            <el-option label="Upload JAR" value="external://jar"></el-option>
           </el-select>
         </el-form-item>
+        <div v-if="createSourceJarVisible">
+          <el-form-item label="JAR">
+            <input type="file" @change="selectJarFileChange"></input>
+          </el-form-item>
+          <el-form-item label="JAR Classname">
+            <el-input v-model="createSourceInfo.className" placeholder="com.example.java.class.ExampleSource"></el-input>
+          </el-form-item>
+        </div>
         <el-form-item label="Name">
-          <el-input v-model="createSourceInfo.name"></el-input>
+          <el-input v-model="createSourceInfo.name" placeholder="example_source_name"></el-input>
         </el-form-item>
         <el-form-item label="Tenant">
           <el-input v-model="createSourceInfo.tenant"></el-input>
@@ -71,7 +80,7 @@
           <el-input v-model="createSourceInfo.namespace"></el-input>
         </el-form-item>
         <el-form-item label="Topic name">
-          <el-input v-model="createSourceInfo.topicName"></el-input>
+          <el-input v-model="createSourceInfo.topicName" placeholder="public/default/topic"></el-input>
         </el-form-item>
         <el-form-item label="Parallelism">
           <el-input v-model.number="createSourceInfo.parallelism"></el-input>
@@ -170,6 +179,9 @@
             <el-input v-model="createSourceInfo.password"></el-input>
           </el-form-item>
         </div>
+        <el-form-item label="Other configs">
+          <el-input v-model="createSourceInfo.configs" :autosize="{minRows: 1}" type="textarea" placeholder="{&quot;property&quot;: &quot;value&quot;}"></el-input>
+        </el-form-item>
         
         <el-form-item>
           <el-button type="primary" @click="createSource('createSourceForm')">Create source</el-button>
@@ -205,12 +217,15 @@ export default {
       createSourceVisible: false,
       createSourceInfo: {
         archive: null,
+        jar: [],
+        className: null,
         name: null,
         tenant: 'public',
         namespace: 'default',
         topicsPattern: null,
         parallelism: 1,
         processingGuarantees: 'ATLEAST_ONCE',
+        configs: null,
         
         nettyType: 'http',
         nettyHost: '127.0.0.1',
@@ -244,7 +259,8 @@ export default {
       createSourceNettyVisible: false,
       createSourceFileVisible: false,
       createSourceUserPassVisible: false,
-      createSourceRabbitVisible: false
+      createSourceRabbitVisible: false,
+      createSourceJarVisible: false
     };
   },
 
@@ -285,7 +301,6 @@ export default {
     
     createSource(formName) {
       var sourceConfig = {
-        archive: this.createSourceInfo.archive,
         topicName: this.createSourceInfo.topicName,
         parallelism: this.createSourceInfo.parallelism,
         processingGuarantees: this.createSourceInfo.processingGuarantees
@@ -293,6 +308,7 @@ export default {
       
       switch(this.createSourceInfo.archive) {
         case 'builtin://netty':
+          sourceConfig.archive = this.createSourceInfo.archive;
           sourceConfig.configs = {
             type: this.createSourceInfo.nettyType,
             host: this.createSourceInfo.nettyHost,
@@ -301,6 +317,7 @@ export default {
           };
           break;
         case 'builtin://file':
+          sourceConfig.archive = this.createSourceInfo.archive;
           sourceConfig.configs = {
             inputDirectory: this.createSourceInfo.fileInputDir,
             recurse: this.createSourceInfo.recurse,
@@ -318,6 +335,7 @@ export default {
           };
           break;
         case 'builtin://rabbitmq':
+          sourceConfig.archive = this.createSourceInfo.archive;
           sourceConfig.configs = {
             connectionName: this.createSourceInfo.rabbitConnectionName,
             host: this.createSourceInfo.rabbitHost,
@@ -329,12 +347,37 @@ export default {
             passive: this.createSourceInfo.rabbitPassive
           };
           break;
+        case 'external://jar':
+          sourceConfig.className = this.createSourceInfo.className;
+          break;
+      }
+      
+      // merge other configs to sourceConfig.configs object
+      if (this.createSourceInfo.configs) {
+        otherConfigs = {}
+        try {
+          otherConfigs = JSON.parse(this.createSourceInfo.configs);
+        } catch (e) {
+          this.$message({
+            type: 'error',
+            message: 'Can not parse other config, please make sure it is valid JSON: ' + e
+          })
+          return;
+        }
+        
+        for (var prop in otherConfigs) {
+          sourceConfig.configs[prop] = otherConfigs[prop];
+        }
       }
       
       const blob = new Blob([JSON.stringify(sourceConfig)], { type: "application/json"});
       
       const formData = new FormData();
       formData.append("sourceConfig", blob)
+      
+      if (this.createSourceInfo.archive == "external://jar") {
+        formData.append("data", this.createSourceInfo.jar[0])
+      }
       
       this.$pulsar.createSource(this.createSourceInfo.tenant + '/' + this.createSourceInfo.namespace + '/' + this.createSourceInfo.name, this.clusters[0], formData)
         .then (resp => {
@@ -356,6 +399,7 @@ export default {
       this.createSourceFileVisible = false;
       this.createSourceRabbitVisible = false;
       this.createSourceNettyVisible = false;
+      this.createSourceJarVisible = false;
     
       switch(this.createSourceInfo.archive) {
         case 'builtin://file':
@@ -367,7 +411,14 @@ export default {
         case 'builtin://rabbitmq':
           this.createSourceRabbitVisible = true;
           break;
+        case 'external://jar':
+          this.createSourceJarVisible = true;
+          break;
       }
+    },
+    
+    selectJarFileChange(e) {
+      this.createSourceInfo.jar = e.target.files;
     }
   },
 
