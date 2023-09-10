@@ -278,7 +278,8 @@ export default {
       createSinkJDBCVisible: false,
       createSinkUserPassVisible: false,
       createSinkRabbitVisible: false,
-      createSinkCassandraVisible: false
+      createSinkCassandraVisible: false,
+      createSinkJarVisible: false
     }
   },
 
@@ -430,8 +431,6 @@ export default {
           sinkConfig.configs[prop] = otherConfigs[prop];
         }
       }
-      
-      console.log(sinkConfig);
       
       const blob = new Blob([JSON.stringify(sinkConfig)], { type: "application/json"});
       
