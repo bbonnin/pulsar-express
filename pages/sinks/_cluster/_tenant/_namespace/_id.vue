@@ -78,7 +78,7 @@
       </el-alert>
     </div>
     
-    <el-dialog title="Edit sink" :visible.sync="updateSinkVisible">
+    <el-dialog title="Update sink" :visible.sync="updateSinkVisible">
       <el-form ref="updateSinkForm" :model="updateSinkInfo" label-width="200px">
         <el-form-item label="Parallelism">
           <el-input v-model.number="updateSinkInfo.parallelism"></el-input>
