@@ -41,59 +41,83 @@ export default $axios => ({
   },
   
   async fetchTopicDispatchRateConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicRetentionConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/retention?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/retention?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicPersistenceConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/persistence?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/persistence?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicOffloadConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/offloadPolicies?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/offloadPolicies?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicTTLConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/messageTTL?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/messageTTL?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicMaxSubscriptionsConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/maxSubscriptionsPerTopic?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/maxSubscriptionsPerTopic?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicMaxProducersConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/maxProducers?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/maxProducers?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicMaxMessageSizeConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/maxMessageSize?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/maxMessageSize?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicInactivePoliciesConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/inactiveTopicPolicies?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/inactiveTopicPolicies?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicDelayedDeliveryConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/delayedDelivery?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/delayedDelivery?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicDeduplicationConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/deduplicationEnabled?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/deduplicationEnabled?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicCompationThresholdConfig(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/compactionThreshold?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/compactionThreshold?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async fetchTopicMetadata(topic, cluster) {
-    return await $axios.$get('/api/admin/v2/' + topic + '/internal-info?' + getServiceParams(cluster.connection))
+    return await $axios.$get('/api/admin/v2/' + topic + '/internal-info?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
   async deleteFunction(fctName, cluster) {
     return await $axios.$delete('/api/admin/v3/functions/' + fctName + '?' + getServiceParams(cluster.connection, true))
+  },
+  
+  async createFunction(func, cluster, formData) {
+    return await $axios.$post(
+      '/api/admin/v3/functions/' + func + '?' + getServiceParams(cluster.connection, true),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
+  },  
+  
+  async updateFunction(func, cluster, formData) {
+    return await $axios.$put(
+      '/api/admin/v3/functions/' + func + '?' + getServiceParams(cluster.connection, true),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
   },
 
   async fetchNamespace(ns, cluster) {
@@ -262,6 +286,18 @@ export default $axios => ({
   
   async createSink(sink, cluster, formData) {
     return await $axios.$post(
+      '/api/admin/v3/sinks/' + sink + '?' + getServiceParams(cluster.connection, true),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
+  },
+  
+  async updateSink(sink, cluster, formData) {
+    return await $axios.$put(
       '/api/admin/v3/sinks/' + sink + '?' + getServiceParams(cluster.connection, true),
       formData,
       {

@@ -150,7 +150,7 @@ export default {
             .catch ((err) => {
               this.$message({
                 type: 'error',
-                message: 'Create error: ' + err
+                message: 'Create error: ' + (err.response && err.response.data && err.response.data.reason || err)
               })
             })
           this.createVisible = false
@@ -180,7 +180,7 @@ export default {
             .catch ((err) => {
               this.$message({
                 type: 'error',
-                message: 'Delete error: ' + err
+                message: 'Delete error: ' + (err.response && err.response.data && err.response.data.reason || err)
               })
             })
         })
@@ -206,7 +206,7 @@ export default {
             .catch ((err) => {
               this.$message({
                 type: 'error',
-                message: 'Unload error: ' + err
+                message: 'Unload error: ' + (err.response && err.response.data && err.response.data.reason || err)
               })
             })
         })

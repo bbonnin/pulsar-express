@@ -116,10 +116,19 @@
             <el-option label="ClickHouse (JDBC)" value="builtin://jdbc-clickhouse"></el-option>
             <el-option label="RabbitMQ" value="builtin://rabbitmq"></el-option>
             <el-option label="Cassandra" value="builtin://cassandra"></el-option>
+            <el-option label="Upload JAR" value="external://jar"></el-option>
           </el-select>
         </el-form-item>
+        <div v-if="createSinkJarVisible">
+          <el-form-item label="JAR">
+            <input type="file" @change="selectJarFileChange"></input>
+          </el-form-item>
+          <el-form-item label="JAR Classname">
+            <el-input v-model="createSinkInfo.className" placeholder="com.example.java.class.ExampleSink"></el-input>
+          </el-form-item>
+        </div>
         <el-form-item label="Name">
-          <el-input v-model="createSinkInfo.name"></el-input>
+          <el-input v-model="createSinkInfo.name" placeholder="example_sink_name"></el-input>
         </el-form-item>
         <el-form-item label="Tenant">
           <el-input v-model="createSinkInfo.tenant"></el-input>
@@ -128,7 +137,7 @@
           <el-input v-model="createSinkInfo.namespace"></el-input>
         </el-form-item>
         <el-form-item label="Topics pattern">
-          <el-input v-model="createSinkInfo.topicsPattern"></el-input>
+          <el-input v-model="createSinkInfo.topicsPattern" placeholder="public/default/topic"></el-input>
         </el-form-item>
         <el-form-item label="Parallelism">
           <el-input v-model.number="createSinkInfo.parallelism"></el-input>
@@ -210,6 +219,9 @@
             <el-input v-model="createSinkInfo.password"></el-input>
           </el-form-item>
         </div>
+        <el-form-item label="Other configs">
+          <el-input v-model="createSinkInfo.configs" :autosize="{minRows: 1}" type="textarea" placeholder="{&quot;property&quot;: &quot;value&quot;}"></el-input>
+        </el-form-item>
         
         <el-form-item>
           <el-button type="primary" @click="createSink('createSinkForm')">Create sink</el-button>
@@ -243,6 +255,8 @@ export default {
       createSinkVisible: false,
       createSinkInfo: {
         archive: null,
+        jar: [],
+        className: null,
         name: null,
         tenant: 'public',
         namespace: 'default',
@@ -253,6 +267,7 @@ export default {
         esUrl: '',
         esIndexName: '',
         esCreateIndexIfNeeded: false,
+        configs: null,
         
         jdbcUrl: '',
         jdbcTableName: '',
@@ -263,7 +278,8 @@ export default {
       createSinkJDBCVisible: false,
       createSinkUserPassVisible: false,
       createSinkRabbitVisible: false,
-      createSinkCassandraVisible: false
+      createSinkCassandraVisible: false,
+      createSinkJarVisible: false
     }
   },
 
@@ -331,14 +347,13 @@ export default {
         .catch (err => {
           this.$message({
             type: 'error',
-            message: 'Delete error: ' + err
+            message: 'Delete error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
     
     createSink(formName) {
       var sinkConfig = {
-        archive: this.createSinkInfo.archive,
         topicsPattern: this.createSinkInfo.topicsPattern,
         parallelism: this.createSinkInfo.parallelism,
         processingGuarantees: this.createSinkInfo.processingGuarantees,
@@ -347,6 +362,7 @@ export default {
       
       switch(this.createSinkInfo.archive) {
         case 'builtin://elastic_search':
+          sinkConfig.archive = this.createSinkInfo.archive;
           sinkConfig.configs = {
             elasticSearchUrl: this.createSinkInfo.esUrl,
             indexName: this.createSinkInfo.esIndexName,
@@ -354,21 +370,24 @@ export default {
           };
           break;
         case 'builtin://jdbc-sqlite':
+          sinkConfig.archive = this.createSinkInfo.archive;
           sinkConfig.configs = {
             jdbcUrl: this.createSinkInfo.jdbcUrl,
-            tablename: this.createSinkInfo.jdbcTableName
+            tableName: this.createSinkInfo.jdbcTableName
           };
         case 'builtin://jdbc-postgres':
         case 'builtin://jdbc-mariadb':
         case 'builtin://jdbc-clickhouse':
+          sinkConfig.archive = this.createSinkInfo.archive;
           sinkConfig.configs = {
             jdbcUrl: this.createSinkInfo.jdbcUrl,
-            tablename: this.createSinkInfo.jdbcTableName,
+            tableName: this.createSinkInfo.jdbcTableName,
             userName: this.createSinkInfo.username,
             password: this.createSinkInfo.password
           };
           break;
         case 'builtin://rabbitmq':
+          sinkConfig.archive = this.createSinkInfo.archive;
           sinkConfig.configs = {
             connectionName: this.createSinkInfo.rabbitConnectionName,
             host: this.createSinkInfo.rabbitHost,
@@ -381,6 +400,7 @@ export default {
           };
           break;
         case 'builtin://cassandra':
+          sinkConfig.archive = this.createSinkInfo.archive;
           sinkConfig.configs = {
             roots: this.createSinkInfo.cassandraRoots,
             keyspace: this.createSinkInfo.cassandraKeyspace,
@@ -389,14 +409,37 @@ export default {
             columnName: this.createSinkInfo.cassandraColumnName
           };
           break;
+        case 'external://jar':
+          sinkConfig.className = this.createSinkInfo.className;
+          break;
       }
       
-      console.log(sinkConfig);
+      // merge other configs to sinkConfig.configs object
+      if (this.createSinkInfo.configs) {
+        otherConfigs = {}
+        try {
+          otherConfigs = JSON.parse(this.createSinkInfo.configs);
+        } catch (e) {
+          this.$message({
+            type: 'error',
+            message: 'Can not parse other config, please make sure it is valid JSON: ' + e
+          })
+          return;
+        }
+        
+        for (var prop in otherConfigs) {
+          sinkConfig.configs[prop] = otherConfigs[prop];
+        }
+      }
       
       const blob = new Blob([JSON.stringify(sinkConfig)], { type: "application/json"});
       
       const formData = new FormData();
       formData.append("sinkConfig", blob)
+      
+      if (this.createSinkInfo.archive == "external://jar") {
+        formData.append("data", this.createSinkInfo.jar[0])
+      }
       
       this.$pulsar.createSink(this.createSinkInfo.tenant + '/' + this.createSinkInfo.namespace + '/' + this.createSinkInfo.name, this.clusters[0], formData)
         .then (resp => {
@@ -409,7 +452,7 @@ export default {
         .catch (err => {
           this.$message({
             type: 'error',
-            message: 'Create error: ' + err
+            message: 'Create error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -420,6 +463,7 @@ export default {
       this.createSinkUserPassVisible = false;
       this.createSinkRabbitVisible = false;
       this.createSinkCassandraVisible = false;
+      this.createSinkJarVisible = false;
     
       switch(this.createSinkInfo.archive) {
         case 'builtin://elastic_search':
@@ -441,7 +485,14 @@ export default {
         case 'builtin://cassandra':
           this.createSinkCassandraVisible = true;
           break;
+        case 'external://jar':
+          this.createSinkJarVisible = true;
+          break;
       }
+    },
+    
+    selectJarFileChange(e) {
+      this.createSinkInfo.jar = e.target.files;
     }
   },
 

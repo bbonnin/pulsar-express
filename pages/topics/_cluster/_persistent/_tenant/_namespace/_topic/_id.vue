@@ -588,21 +588,37 @@ export default {
       const topicOriginName = this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic.replace(/-partition-[0-9]$/, '');
       
       this.policies = {
-        policies: {
-          subscriptionDispatchRate: await this.$pulsar.fetchTopicDispatchRateConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-          retention: await this.$pulsar.fetchTopicRetentionConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-          persistence: await this.$pulsar.fetchTopicPersistenceConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-          TTL: await this.$pulsar.fetchTopicTTLConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-          maxSubscription: await this.$pulsar.fetchTopicMaxSubscriptionsConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-          maxProducer: await this.$pulsar.fetchTopicMaxProducersConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-          maxMessageSize: await this.$pulsar.fetchTopicMaxMessageSizeConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-          inactivePolicies: await this.$pulsar.fetchTopicInactivePoliciesConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-          delayedDelivery: await this.$pulsar.fetchTopicDelayedDeliveryConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-          deduplication: await this.$pulsar.fetchTopicDeduplicationConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-          compationThreshold: await this.$pulsar.fetchTopicCompationThresholdConfig(this.$route.params.persistent + '/' + topicOriginName, cluster)
-        },
+        policies: {},
         stats: this.currentTopic.stats
       };
+      
+      // fetch policies information
+      await Promise.all([
+        this.$pulsar.fetchTopicDispatchRateConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicRetentionConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicPersistenceConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicTTLConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicMaxSubscriptionsConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicMaxProducersConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicMaxMessageSizeConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicInactivePoliciesConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicDelayedDeliveryConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicDeduplicationConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicCompationThresholdConfig(this.$route.params.persistent + '/' + topicOriginName, cluster)
+      ]).then((values) => {
+        this.policies.policies.subscriptionDispatchRate = values[0];
+        this.policies.policies.retention = values[1];
+        this.policies.policies.persistence = values[2];
+        this.policies.policies.TTL = values[3];
+        this.policies.policies.maxSubscription = values[4];
+        this.policies.policies.maxProducer = values[5];
+        this.policies.policies.maxMessageSize = values[6];
+        this.policies.policies.inactivePolicies = values[7];
+        this.policies.policies.delayedDelivery = values[8];
+        this.policies.policies.deduplication = values[9];
+        this.policies.policies.compationThreshold = values[10];
+      })
+      
       if (this.policies.stats.publishers) {
         this.policies.stats.publishers = Object.assign({}, this.policies.stats.publishers)
       }
@@ -674,7 +690,7 @@ export default {
               .catch ((err) => {
                 this.$message({
                   type: 'error',
-                  message: 'Error: ' + err
+                  message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
                 })
               })
           }
@@ -701,7 +717,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Error: ' + err
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -718,7 +734,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Error: ' + err
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -735,7 +751,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Error: ' + err
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -752,7 +768,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Error: ' + err
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -769,7 +785,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Error: ' + err
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -786,7 +802,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Error: ' + err
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -805,7 +821,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Error: ' + err
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -824,7 +840,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Delete error: ' + err
+            message: 'Delete error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -849,7 +865,7 @@ export default {
             .catch ((err) => {
               this.$message({
                 type: 'error',
-                message: 'Truncate error: ' + err
+                message: 'Truncate error: ' + (err.response && err.response.data && err.response.data.reason || err)
               })
             })
         })
@@ -869,7 +885,7 @@ export default {
         .catch ((err) => {
           this.$message({
             type: 'error',
-            message: 'Trim error: ' + err
+            message: 'Trim error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -893,7 +909,7 @@ export default {
             .catch ((err) => {
               this.$message({
                 type: 'error',
-                message: 'Unload error: ' + err
+                message: 'Unload error: ' + (err.response && err.response.data && err.response.data.reason || err)
               })
             })
         })

@@ -112,8 +112,56 @@
       </el-alert>
     </div>
     <div class="button-bar">
+      <el-button type="primary" @click="createFunctionVisible = true">Create</el-button>
       <el-button @click="reload()">Reload</el-button>
     </div>
+    
+    <el-dialog title="Create function" :visible.sync="createFunctionVisible">
+      <el-form ref="createFunctionForm" :model="createFunctionInfo" label-width="200px">
+        <el-form-item label="JAR">
+          <input type="file" @change="selectJarFileChange"></input>
+        </el-form-item>
+        <el-form-item label="JAR Classname">
+          <el-input v-model="createFunctionInfo.className" placeholder="com.example.java.class.ExampleFunction"></el-input>
+        </el-form-item>
+        <el-form-item label="Name">
+          <el-input v-model="createFunctionInfo.name" placeholder="example_function_name"></el-input>
+        </el-form-item>
+        <el-form-item label="Tenant">
+          <el-input v-model="createFunctionInfo.tenant"></el-input>
+        </el-form-item>
+        <el-form-item label="Namespace">
+          <el-input v-model="createFunctionInfo.namespace"></el-input>
+        </el-form-item>
+        <el-form-item label="Topics pattern">
+          <el-input v-model="createFunctionInfo.topicsPattern" placeholder="public/default/topic"></el-input>
+        </el-form-item>
+        <el-form-item label="Parallelism">
+          <el-input v-model.number="createFunctionInfo.parallelism"></el-input>
+        </el-form-item>
+        <el-form-item label="Processing guarantees">
+          <el-select v-model="createFunctionInfo.processingGuarantees">
+            <el-option label="ATLEAST ONCE" value="ATLEAST_ONCE"></el-option>
+            <el-option label="ATMOST ONCE" value="ATMOST_ONCE"></el-option>
+            <el-option label="EFFECTIVELY ONCE" value="EFFECTIVELY_ONCE"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Subscription position">
+          <el-select v-model="createFunctionInfo.subscriptionPosition">
+            <el-option label="Earliest" value="Earliest"></el-option>
+            <el-option label="Latest" value="Latest"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Configs">
+          <el-input v-model="createFunctionInfo.configs" :autosize="{minRows: 1}" type="textarea" placeholder="{&quot;property&quot;: &quot;value&quot;}"></el-input>
+        </el-form-item>
+        
+        <el-form-item>
+          <el-button type="primary" @click="createFunction('createFunctionForm')">Create function</el-button>
+          <el-button @click="createFunctionVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
   </div>
 </template>
 
@@ -135,7 +183,21 @@ export default {
   data() {
     return {
       loading: false,
-      functions: []
+      functions: [],
+      
+      createFunctionVisible: false,
+      createFunctionInfo: {
+        jar: [],
+        className: null,
+        name: null,
+        tenant: 'public',
+        namespace: 'default',
+        topicsPattern: null,
+        parallelism: 1,
+        processingGuarantees: 'ATLEAST_ONCE',
+        subscriptionPosition: 'Latest',
+        configs: null
+      },
     }
   },
 
@@ -175,7 +237,7 @@ export default {
     
     deleteFunction(id) {
       const func = this.functions[id]
-      this.$pulsar.deleteFunction(func.fullname, func.currentFunction.cluster)
+      this.$pulsar.deleteFunction(func.infos.tenant + '/' + func.infos.namespace + '/' + func.infos.name, func.cluster)
         .then (resp => {
           this.$message({
             type: 'success',
@@ -186,7 +248,7 @@ export default {
         .catch (err => {
           this.$message({
             type: 'error',
-            message: 'Delete error: ' + err
+            message: 'Delete error: ' + (err.response && err.response.data && err.response.data.reason || err)
           })
         })
     },
@@ -203,8 +265,9 @@ export default {
         connections = this.$store.state.connections.connections
       }
 
-      const clusters = await this.$pulsar.fetchClusters(connections)
-      const tenants = await this.$pulsar.fetchTenants(clusters)
+      this.clusters = await this.$pulsar.fetchClusters(connections)
+      
+      const tenants = await this.$pulsar.fetchTenants(this.clusters)
       const namespaces = await this.$pulsar.fetchNamespaces(tenants)
 
       const functionsByNs = []
@@ -279,6 +342,60 @@ export default {
       this.setFunctions(this.functions)
 
       this.loading = false
+    },
+    
+    createFunction(formName) {
+      var functionConfig = {
+        topicsPattern: this.createFunctionInfo.topicsPattern,
+        parallelism: this.createFunctionInfo.parallelism,
+        processingGuarantees: this.createFunctionInfo.processingGuarantees,
+        sourceSubscriptionPosition: this.createFunctionInfo.sourceSubscriptionPosition,
+        runtime: "JAVA",
+        className: this.createFunctionInfo.className
+      }
+      
+      // merge other configs to functionConfig.configs object
+      if (this.createFunctionInfo.configs) {
+        otherConfigs = {}
+        try {
+          otherConfigs = JSON.parse(this.createFunctionInfo.configs);
+        } catch (e) {
+          this.$message({
+            type: 'error',
+            message: 'Can not parse other config, please make sure it is valid JSON: ' + e
+          })
+          return;
+        }
+        
+        for (var prop in otherConfigs) {
+          functionConfig.configs[prop] = otherConfigs[prop];
+        }
+      }
+      
+      const blob = new Blob([JSON.stringify(functionConfig)], { type: "application/json"});
+      
+      const formData = new FormData();
+      formData.append("functionConfig", blob)
+      formData.append("data", this.createFunctionInfo.jar[0])
+      
+      this.$pulsar.createFunction(this.createFunctionInfo.tenant + '/' + this.createFunctionInfo.namespace + '/' + this.createFunctionInfo.name, this.clusters[0], formData)
+        .then (resp => {
+          this.$message({
+            type: 'success',
+            message: 'Create new function successfully!'
+          })
+          this.reload()
+        })
+        .catch (err => {
+          this.$message({
+            type: 'error',
+            message: 'Create error: ' + (err.response && err.response.data && err.response.data.reason || err)
+          })
+        })
+    },
+    
+    selectJarFileChange(e) {
+      this.createFunctionInfo.jar = e.target.files;
     }
   },
 
