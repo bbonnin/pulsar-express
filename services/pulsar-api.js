@@ -106,7 +106,7 @@ export default $axios => ({
         }
       }
     )
-  },  
+  },
   
   async updateFunction(func, cluster, formData) {
     return await $axios.$put(
@@ -505,4 +505,56 @@ export default $axios => ({
   async drainWorker(workerId, cluster) {
     return await $axios.$put('/api/admin/v2/worker/leader/drain?workerId=' + workerId + '&' + getServiceParams(cluster.connection))
   },
+  
+  async fetchPackagesNS(namespaces) {
+    let pkgs = []
+
+    for (const tp of ['function', 'source', 'sink']) {
+      for (const ns of namespaces) {
+        try {
+          const result = await $axios.$get('/api/admin/v3/packages/' + tp + '/' + ns.namespace + '?' + getServiceParams(ns.cluster.connection))
+          pkgs = pkgs.concat(result.map(pkg => ({ cluster: ns.cluster, ns: ns, type: tp, name: pkg, id: tp + '/' + ns.namespace + '/' + pkg })))
+        }
+        catch (err) {
+          console.error(err)
+        }
+      }
+    }
+
+    return pkgs
+  },
+  
+  async fetchPackages(clusters) {
+    const tenants = await this.fetchTenants(clusters)
+    const namespaces = await this.fetchNamespaces(tenants)
+    return await this.fetchPackagesNS(namespaces)
+  },
+  
+  async fetchPackageVersions(pkg, cluster) {
+    const versions = await $axios.$get('/api/admin/v3/packages/' + pkg + '?' + getServiceParams(cluster.connection))
+    
+    let vers = []
+    for (const ver of versions) {
+        const result = await $axios.$get('/api/admin/v3/packages/' + pkg + '/' + ver + '/metadata?' + getServiceParams(cluster.connection))
+        vers.push({ cluster: cluster, version: ver, id: pkg + '/' + ver, ...result })
+    }
+    
+    return vers
+  },
+  
+  async createPackage(type, tenant, ns, pkg, version, cluster, formData) {
+    return await $axios.$post(
+      '/api/admin/v3/packages/' + type + '/' + tenant + '/' + ns + '/' + pkg + '/' + version + '?' + getServiceParams(cluster.connection),
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        }
+      }
+    )
+  },
+  
+  async deletePackageVersion(id, cluster) {
+    return await $axios.$delete('/api/admin/v3/packages/' + id + '?' + getServiceParams(cluster.connection))
+  }
 })

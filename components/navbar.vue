@@ -35,6 +35,9 @@
         <div class="nav-item">
           <nuxt-link to="/connections">Connections</nuxt-link>
         </div>
+        <div class="nav-item">
+          <nuxt-link to="/packages">Packages</nuxt-link>
+        </div>
       </nav>
     </div>
   </header>
