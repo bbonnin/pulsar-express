@@ -53,7 +53,7 @@
     </div>
     
     <div class="button-bar">
-      <el-button type="primary" @click="createVisible = true">Create package</el-button>
+      <el-button type="primary" @click="createVisible = true">Create</el-button>
       <el-button @click="reload()">Reload</el-button>
     </div>
 
