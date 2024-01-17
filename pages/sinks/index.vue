@@ -116,12 +116,21 @@
             <el-option label="ClickHouse (JDBC)" value="builtin://jdbc-clickhouse"></el-option>
             <el-option label="RabbitMQ" value="builtin://rabbitmq"></el-option>
             <el-option label="Cassandra" value="builtin://cassandra"></el-option>
+            <el-option label="Package URL" value="external://pkgUrl"></el-option>
             <el-option label="Upload JAR" value="external://jar"></el-option>
           </el-select>
         </el-form-item>
         <div v-if="createSinkJarVisible">
           <el-form-item label="JAR">
             <input type="file" @change="selectJarFileChange"></input>
+          </el-form-item>
+          <el-form-item label="JAR Classname">
+            <el-input v-model="createSinkInfo.className" placeholder="com.example.java.class.ExampleSink"></el-input>
+          </el-form-item>
+        </div>
+        <div v-if="createSinkPkgUrlVisible">
+          <el-form-item label="Package URL">
+            <el-input v-model="createSinkInfo.pkgUrl" placeholder="sink://tenant/namespace/package_name@version or http:// or file://"></el-input>
           </el-form-item>
           <el-form-item label="JAR Classname">
             <el-input v-model="createSinkInfo.className" placeholder="com.example.java.class.ExampleSink"></el-input>
@@ -256,6 +265,7 @@ export default {
       createSinkInfo: {
         archive: null,
         jar: [],
+        pkgUrl: null,
         className: null,
         name: null,
         tenant: 'public',
@@ -279,7 +289,8 @@ export default {
       createSinkUserPassVisible: false,
       createSinkRabbitVisible: false,
       createSinkCassandraVisible: false,
-      createSinkJarVisible: false
+      createSinkJarVisible: false,
+      createSinkPkgUrlVisible: false
     }
   },
 
@@ -412,6 +423,9 @@ export default {
         case 'external://jar':
           sinkConfig.className = this.createSinkInfo.className;
           break;
+        case 'external://pkgUrl':
+          sinkConfig.className = this.createSinkInfo.className;
+          break;
       }
       
       // merge other configs to sinkConfig.configs object
@@ -440,6 +454,9 @@ export default {
       if (this.createSinkInfo.archive == "external://jar") {
         formData.append("data", this.createSinkInfo.jar[0])
       }
+      else if (this.createSinkInfo.archive == "external://pkgUrl") {
+        formData.append("url", this.createSinkInfo.pkgUrl)
+      }
       
       this.$pulsar.createSink(this.createSinkInfo.tenant + '/' + this.createSinkInfo.namespace + '/' + this.createSinkInfo.name, this.clusters[0], formData)
         .then (resp => {
@@ -464,6 +481,7 @@ export default {
       this.createSinkRabbitVisible = false;
       this.createSinkCassandraVisible = false;
       this.createSinkJarVisible = false;
+      this.createSinkPkgUrlVisible = false;
     
       switch(this.createSinkInfo.archive) {
         case 'builtin://elastic_search':
@@ -487,6 +505,9 @@ export default {
           break;
         case 'external://jar':
           this.createSinkJarVisible = true;
+          break;
+        case 'external://pkgUrl':
+          this.createSinkPkgUrlVisible = true;
           break;
       }
     },

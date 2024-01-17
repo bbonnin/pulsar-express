@@ -59,12 +59,21 @@
             <el-option label="File" value="builtin://file"></el-option>
             <el-option label="Netty" value="builtin://netty"></el-option>
             <el-option label="RabbitMQ" value="builtin://rabbitmq"></el-option>
+            <el-option label="Package URL" value="external://pkgUrl"></el-option>
             <el-option label="Upload JAR" value="external://jar"></el-option>
           </el-select>
         </el-form-item>
         <div v-if="createSourceJarVisible">
           <el-form-item label="JAR">
             <input type="file" @change="selectJarFileChange"></input>
+          </el-form-item>
+          <el-form-item label="JAR Classname">
+            <el-input v-model="createSourceInfo.className" placeholder="com.example.java.class.ExampleSource"></el-input>
+          </el-form-item>
+        </div>
+        <div v-if="createSourcePkgUrlVisible">
+          <el-form-item label="Package URL">
+            <el-input v-model="createSourceInfo.pkgUrl" placeholder="source://tenant/namespace/package_name@version or http:// or file://"></el-input>
           </el-form-item>
           <el-form-item label="JAR Classname">
             <el-input v-model="createSourceInfo.className" placeholder="com.example.java.class.ExampleSource"></el-input>
@@ -218,6 +227,7 @@ export default {
       createSourceInfo: {
         archive: null,
         jar: [],
+        pkgUrl: null,
         className: null,
         name: null,
         tenant: 'public',
@@ -260,7 +270,8 @@ export default {
       createSourceFileVisible: false,
       createSourceUserPassVisible: false,
       createSourceRabbitVisible: false,
-      createSourceJarVisible: false
+      createSourceJarVisible: false,
+      createSourcePkgUrlVisible: false
     };
   },
 
@@ -350,6 +361,9 @@ export default {
         case 'external://jar':
           sourceConfig.className = this.createSourceInfo.className;
           break;
+        case 'external://pkgUrl':
+          sourceConfig.className = this.createSourceInfo.className;
+          break;
       }
       
       // merge other configs to sourceConfig.configs object
@@ -378,6 +392,9 @@ export default {
       if (this.createSourceInfo.archive == "external://jar") {
         formData.append("data", this.createSourceInfo.jar[0])
       }
+      else if (this.createSourceInfo.archive == "external://pkgUrl") {
+        formData.append("url", this.createSourceInfo.pkgUrl)
+      }
       
       this.$pulsar.createSource(this.createSourceInfo.tenant + '/' + this.createSourceInfo.namespace + '/' + this.createSourceInfo.name, this.clusters[0], formData)
         .then (resp => {
@@ -400,6 +417,7 @@ export default {
       this.createSourceRabbitVisible = false;
       this.createSourceNettyVisible = false;
       this.createSourceJarVisible = false;
+      this.createSourcePkgUrlVisible = false;
     
       switch(this.createSourceInfo.archive) {
         case 'builtin://file':
@@ -413,6 +431,9 @@ export default {
           break;
         case 'external://jar':
           this.createSourceJarVisible = true;
+          break;
+        case 'external://pkgUrl':
+          this.createSourcePkgUrlVisible = true;
           break;
       }
     },
