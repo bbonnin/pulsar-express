@@ -4,6 +4,10 @@
       
       <breadcrumb :items="breadcrumbItems" />
       
+      <h3>Properties</h3>
+
+      <propertyview :props="infos[0]"></propertyview>
+      
       <h3>Exec</h3>
       <el-table
         :data="infos"
@@ -152,6 +156,7 @@
 <script>
 import { cellFormatFloat, cellFormatSimpleTopicName, getSimpleTopicName, cellFormatBoolean, shortClassName } from '@/services/utils'
 import breadcrumb from '@/components/breadcrumb'
+import propertyview from '@/components/property-view'
 import { mapState, mapActions } from 'vuex'
 
 export default {
@@ -160,7 +165,7 @@ export default {
   layout: 'dataview',
 
   components: {
-    breadcrumb
+    breadcrumb, propertyview
   },
 
   data() {
