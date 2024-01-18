@@ -556,5 +556,9 @@ export default $axios => ({
   
   async deletePackageVersion(id, cluster) {
     return await $axios.$delete('/api/admin/v3/packages/' + id + '?' + getServiceParams(cluster.connection))
+  },
+  
+  async downloadPackageVersion(id, cluster) {
+    return await $axios.get('/api/admin/v3/packages/' + id + '?' + getServiceParams(cluster.connection), {responseType: 'arraybuffer'})
   }
 })

@@ -40,6 +40,12 @@
           width="300">
           <template slot-scope="scope">
             <el-button
+              @click.native.prevent="downloadPackageVersion(scope.row)"
+              type="primary" plain round
+              size="mini">
+              Download
+            </el-button>
+            <el-button
               @click.native.prevent="deletePackageVersion(scope.row)"
               type="danger" plain round
               size="mini">
@@ -133,6 +139,14 @@ export default {
               })
             })
         })
+    },
+    
+    downloadPackageVersion(ref) {
+      this.$pulsar.downloadPackageVersion(ref.id, ref.cluster).then(response => {
+        let blob = new Blob([response.data], { type: 'application/octet-stream' }),
+        url = window.URL.createObjectURL(blob)
+        window.open(url)
+      })
     },
 
     async reload() {
