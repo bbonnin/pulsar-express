@@ -35,6 +35,15 @@
           </template>
         </el-table-column>
         <el-table-column
+          prop="properties"
+          label="Properties">
+          <template slot-scope="scope">
+            <span>
+              {{JSON.stringify(scope.row.properties, null, 2)}}
+            </span>
+          </template>
+        </el-table-column>
+        <el-table-column
           fixed="right"
           label="Actions"
           width="300">
