@@ -83,6 +83,9 @@
         <el-form-item label="Parallelism">
           <el-input v-model.number="updateSinkInfo.parallelism"></el-input>
         </el-form-item>
+        <el-form-item label="Cleanup subscription">
+          <el-checkbox v-model.boolean="updateSinkInfo.cleanupSubscription"></el-checkbox>
+        </el-form-item>
         <el-form-item label="Processing guarantees">
           <el-select v-model="updateSinkInfo.processingGuarantees">
             <el-option label="ATLEAST ONCE" value="ATLEAST_ONCE"></el-option>
@@ -128,6 +131,7 @@ export default {
       updateSinkVisible: false,
       updateSinkInfo: {
         parallelism: 1,
+        cleanupSubscription: true,
         processingGuarantees: 'ATLEAST_ONCE',
         sourceSubscriptionPosition: 'Latest'
       }
@@ -241,6 +245,7 @@ export default {
       
       // Set default value of update form to current sink properties
       this.updateSinkInfo.parallelism = this.policies.parallelism
+      this.updateSinkInfo.cleanupSubscription = this.policies.cleanupSubscription
       this.updateSinkInfo.processingGuarantees = this.policies.processingGuarantees
       this.updateSinkInfo.sourceSubscriptionPosition = this.policies.sourceSubscriptionPosition;
     },
@@ -248,6 +253,7 @@ export default {
     updateSink(formName) {
       var sinkConfig = {
         parallelism: this.updateSinkInfo.parallelism,
+        cleanupSubscription: this.updateSinkInfo.cleanupSubscription,
         processingGuarantees: this.updateSinkInfo.processingGuarantees,
         sourceSubscriptionPosition: this.updateSinkInfo.sourceSubscriptionPosition
       }

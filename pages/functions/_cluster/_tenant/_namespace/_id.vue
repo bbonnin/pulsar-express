@@ -142,6 +142,9 @@
       <el-form ref="updateFunctionForm" :model="updateFunctionInfo" label-width="200px">
         <el-form-item label="Parallelism">
           <el-input v-model.number="updateFunctionInfo.parallelism"></el-input>
+        </el-form-item>        
+        <el-form-item label="Cleanup subscription">
+          <el-checkbox v-model.boolean="updateFunctionInfo.cleanupSubscription"></el-checkbox>
         </el-form-item>
         
         <el-form-item>
@@ -173,7 +176,8 @@ export default {
       instances: [],
       updateFunctionVisible: false,
       updateFunctionInfo: {
-        parallelism: 1
+        parallelism: 1,
+        cleanupSubscription: false
       }
     }
   },
@@ -236,6 +240,9 @@ export default {
       const cluster = this.clusters.find(c => c.name == this.$route.params.cluster)
       
       const fctSInfos = await this.$pulsar.fetchFunction(this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.id, cluster)
+      
+      this.updateFunctionInfo.parallelism = fctSInfos.parallelism
+      this.updateFunctionInfo.cleanupSubscription = fctSInfos.cleanupSubscription
       
       this.setFunctions([
         {
@@ -301,7 +308,8 @@ export default {
     
     updateFunction(formName) {
       var sinkConfig = {
-        parallelism: this.updateFunctionInfo.parallelism
+        parallelism: this.updateFunctionInfo.parallelism,
+        cleanupSubscription: this.updateFunctionInfo.cleanupSubscription
       }
       
       const blob = new Blob([JSON.stringify(sinkConfig)], { type: "application/json"});
