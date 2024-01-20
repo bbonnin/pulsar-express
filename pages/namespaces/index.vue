@@ -23,7 +23,7 @@
         <el-table-column
           fixed="right"
           label="Actions"
-          width="300">
+          width="400">
           <template slot-scope="scope">
             <el-button
               @click.native.prevent="showDetails(scope.row.id)"
@@ -42,6 +42,12 @@
               type="danger" plain round
               size="mini">
               Delete
+            </el-button>
+            <el-button
+              @click.native.prevent="forceDeleteNamespace(scope.row.id)"
+              type="danger" plain round
+              size="mini">
+              Force Delete
             </el-button>
           </template>
         </el-table-column>
@@ -161,7 +167,7 @@ export default {
     },
 
     deleteNamespace(id) {      
-      this.$confirm('This will also permanently delete the topics under it. Continue?', 'Warning', {
+      this.$confirm('This will be unrecoverable. Continue?', 'Warning', {
           confirmButtonText: 'OK',
           cancelButtonText: 'Cancel',
           type: 'warning'
@@ -169,7 +175,33 @@ export default {
         .then(() => {
           const ns = this.namespaces[id]
 
-          this.$pulsar.deleteNamespace(ns.namespace, ns.cluster)
+          this.$pulsar.deleteNamespace(ns.namespace, false, ns.cluster)
+            .then(() => {
+              this.$message({
+                type: 'success',
+                message: 'Delete completed'
+              })
+              this.reload()
+            })
+            .catch ((err) => {
+              this.$message({
+                type: 'error',
+                message: 'Delete error: ' + (err.response && err.response.data && err.response.data.reason || err)
+              })
+            })
+        })
+    },
+    
+    forceDeleteNamespace(id) {      
+      this.$confirm('This will also permanently delete the topics under it and can not rollback. Continue?', 'Warning', {
+          confirmButtonText: 'OK',
+          cancelButtonText: 'Cancel',
+          type: 'warning'
+        })
+        .then(() => {
+          const ns = this.namespaces[id]
+
+          this.$pulsar.deleteNamespace(ns.namespace, true, ns.cluster)
             .then(() => {
               this.$message({
                 type: 'success',
