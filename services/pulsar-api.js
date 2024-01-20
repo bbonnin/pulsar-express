@@ -409,6 +409,10 @@ export default $axios => ({
     return await $axios.$post('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '/skip_all?' + getServiceParams(cluster.connection))
   },
   
+  async deleteTopicSubscription(topicName, subName, force, cluster) {
+      return await $axios.$delete('/api/admin/v2/' + topicName + '/subscription/' + encodeURIComponent(encodeURIComponent(subName)) + '?force=' + force + '&' + getServiceParams(cluster.connection))
+  },
+  
   async setTopicDispatchRate(topicName, dispatchRateInfo, cluster) {
     return await $axios.$post('/api/admin/v2/' + topicName + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection), dispatchRateInfo)
   },
