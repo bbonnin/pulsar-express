@@ -209,6 +209,7 @@
             <el-dropdown-item command="resetSubscription">Reset to a time</el-dropdown-item>
             <el-dropdown-item command="skipMesOnSubscription">Skip messages</el-dropdown-item>
             <el-dropdown-item command="skipAllMesOnSubscription">Skip all messages</el-dropdown-item>
+            <el-dropdown-item command="deleteSubscription">Delete</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
         <el-button @click="reload()">Reload</el-button>
@@ -385,9 +386,26 @@
       </el-form>
     </el-dialog>
     
+    <el-dialog title="Delete subscription" :visible.sync="deleteSubscriptionVisible">
+      <el-form ref="deleteSubscriptionForm" :model="deleteSubscriptionInfo" :rules="deleteSubscriptionRules" label-width="200px">
+        <el-form-item label="Subscription" prop="subscription">
+          <el-select v-model="deleteSubscriptionInfo.subscription" placeholder="Please select a subscription">
+            <el-option v-for="sub in subscriptions" :key="sub.name" :label="sub.name" :value="sub.name"></el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="Force delete?">
+          <el-checkbox v-model.boolean="deleteSubscriptionInfo.forceDelete"></el-checkbox>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="danger" @click="deleteSubscription('deleteSubscriptionForm')">Delete</el-button>
+          <el-button @click="deleteSubscriptionVisible = false">Close</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+    
     <el-dialog title="Confirm delete" :visible.sync="confirmDeleteVisible">
       <el-form ref="confirmDeleteForm" :model="confirmDeleteInfo" :rules="confirmDeleteRules" label-width="200px">
-        <el-form-item label="Force delete?" prop="relativeToPublishRate">
+        <el-form-item label="Force delete?">
           <el-checkbox v-model.boolean="confirmDeleteInfo.forceDelete"></el-checkbox>
         </el-form-item>
         <el-form-item>
@@ -491,6 +509,16 @@ export default {
       setTopicDispatchRateRules: {
       },
       setTopicDispatchRateVisible: false,
+      deleteSubscriptionVisible: false,
+      deleteSubscriptionInfo: {
+        subscription: '',
+        forceDelete: false
+      },
+      deleteSubscriptionRules: {
+        subscription: [
+          { required: true, message: 'Please select a subscription', trigger: 'change' }
+        ]
+      },
       confirmDeleteInfo: {
         forceDelete: false
       },
@@ -669,6 +697,9 @@ export default {
         case 'skipAllMesOnSubscription':
           this.skipAllMesOnSubscriptionVisible = true
           break
+        case 'deleteSubscription':
+          this.deleteSubscriptionVisible = true
+          break
       }
     },
 
@@ -817,6 +848,24 @@ export default {
             message: 'Unset topic dispatch rate successfully!'
           })
           self.setTopicDispatchRateVisible = false
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
+          })
+        })
+    },
+    
+    deleteSubscription(formName) {
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name
+      this.$pulsar.deleteTopicSubscription(topicName, this.deleteSubscriptionInfo.subscription, this.deleteSubscriptionInfo.forceDelete, this.currentTopic.cluster)
+        .then((resp) => {
+          this.$message({
+            type: 'success',
+            message: 'Delete the subscription successfully!'
+          })
+          this.reload()
         })
         .catch ((err) => {
           this.$message({

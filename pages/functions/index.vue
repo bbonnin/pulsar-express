@@ -118,9 +118,22 @@
     
     <el-dialog title="Create function" :visible.sync="createFunctionVisible">
       <el-form ref="createFunctionForm" :model="createFunctionInfo" label-width="200px">
-        <el-form-item label="JAR">
-          <input type="file" @change="selectJarFileChange"></input>
+        <el-form-item label="Type">
+          <el-select v-model="createFunctionInfo.archive" placeholder="Please select a function type" @change="createFunctionTypeChanged()">
+            <el-option label="Package URL" value="external://pkgUrl"></el-option>
+            <el-option label="Upload JAR" value="external://jar"></el-option>
+          </el-select>
         </el-form-item>
+        <div v-if="createFunctionJarVisible">
+          <el-form-item label="JAR">
+            <input type="file" @change="selectJarFileChange"></input>
+          </el-form-item>
+        </div>
+        <div v-if="createFunctionPkgUrlVisible">
+          <el-form-item label="Package URL">
+            <el-input v-model="createFunctionInfo.pkgUrl" placeholder="function://tenant/namespace/package_name@version or http:// or file://"></el-input>
+          </el-form-item>
+        </div>
         <el-form-item label="JAR Classname">
           <el-input v-model="createFunctionInfo.className" placeholder="com.example.java.class.ExampleFunction"></el-input>
         </el-form-item>
@@ -187,6 +200,8 @@ export default {
       
       createFunctionVisible: false,
       createFunctionInfo: {
+        archive: null,
+        pkgUrl: null,
         jar: [],
         className: null,
         name: null,
@@ -198,6 +213,9 @@ export default {
         subscriptionPosition: 'Latest',
         configs: null
       },
+      
+      createFunctionPkgUrlVisible: false,
+      createFunctionJarVisible: false
     }
   },
 
@@ -376,7 +394,12 @@ export default {
       
       const formData = new FormData();
       formData.append("functionConfig", blob)
-      formData.append("data", this.createFunctionInfo.jar[0])
+      if (this.createFunctionInfo.archive == "external://jar") {
+        formData.append("data", this.createFunctionInfo.jar[0])
+      }
+      else if (this.createFunctionInfo.archive == "external://pkgUrl") {
+        formData.append("url", this.createFunctionInfo.pkgUrl)
+      }
       
       this.$pulsar.createFunction(this.createFunctionInfo.tenant + '/' + this.createFunctionInfo.namespace + '/' + this.createFunctionInfo.name, this.clusters[0], formData)
         .then (resp => {
@@ -396,6 +419,20 @@ export default {
     
     selectJarFileChange(e) {
       this.createFunctionInfo.jar = e.target.files;
+    },
+    
+    createFunctionTypeChanged() {
+      this.createFunctionPkgUrlVisible = false;
+      this.createFunctionJarVisible = false;
+    
+      switch(this.createFunctionInfo.archive) {
+        case 'external://pkgUrl':
+          this.createFunctionPkgUrlVisible = true;
+          break;
+        case 'external://jar':
+          this.createFunctionJarVisible = true;
+          break;
+      }
     }
   },
 
