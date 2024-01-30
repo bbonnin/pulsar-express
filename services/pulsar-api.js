@@ -41,6 +41,10 @@ export default $axios => ({
   },
   
   async fetchTopicDispatchRateConfig(topic, cluster) {
+    return await $axios.$get('/api/admin/v2/' + topic + '/dispatchRate?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
+  },
+  
+  async fetchTopicSubscriptionDispatchRateConfig(topic, cluster) {
     return await $axios.$get('/api/admin/v2/' + topic + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection)).catch(error => {console.error(error)})
   },
   
@@ -414,10 +418,18 @@ export default $axios => ({
   },
   
   async setTopicDispatchRate(topicName, dispatchRateInfo, cluster) {
-    return await $axios.$post('/api/admin/v2/' + topicName + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection), dispatchRateInfo)
+    return await $axios.$post('/api/admin/v2/' + topicName + '/dispatchRate?' + getServiceParams(cluster.connection), dispatchRateInfo)
   },
   
   async deleteTopicDispatchRate(topicName, cluster) {
+    return await $axios.$delete('/api/admin/v2/' + topicName + '/dispatchRate?' + getServiceParams(cluster.connection))
+  },
+  
+  async setTopicSubscriptionDispatchRate(topicName, dispatchRateInfo, cluster) {
+    return await $axios.$post('/api/admin/v2/' + topicName + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection), dispatchRateInfo)
+  },
+  
+  async deleteTopicSubscriptionDispatchRate(topicName, cluster) {
     return await $axios.$delete('/api/admin/v2/' + topicName + '/subscriptionDispatchRate?' + getServiceParams(cluster.connection))
   },
 

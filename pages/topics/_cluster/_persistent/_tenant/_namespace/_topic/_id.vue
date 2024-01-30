@@ -69,6 +69,7 @@
             <el-dropdown-item command="getPublishedMessageJustAfter">Get published message just after a time</el-dropdown-item>
             <el-dropdown-item command="createMissedPartitions">Create missed partitions</el-dropdown-item>
             <el-dropdown-item command="setTopicDispatchRate">Set dispatch rate</el-dropdown-item>
+            <el-dropdown-item command="setTopicSubscriptionDispatchRate">Set subscription dispatch rate</el-dropdown-item>
           </el-dropdown-menu>
         </el-dropdown>
         <el-button @click="reload()">Reload</el-button>
@@ -386,6 +387,28 @@
       </el-form>
     </el-dialog>
     
+    <el-dialog title="Set subscription dispatch rate" :visible.sync="setTopicSubscriptionDispatchRateVisible">
+      <el-form ref="setTopicSubscriptionDispatchRateForm" :model="setTopicSubscriptionDispatchRateInfo" :rules="setTopicSubscriptionDispatchRateRules" label-width="200px">
+        <el-form-item label="Throttling rate in byte" prop="dispatchThrottlingRateInByte">
+          <el-input v-model.number="setTopicSubscriptionDispatchRateInfo.dispatchThrottlingRateInByte"></el-input>
+        </el-form-item>
+        <el-form-item label="Throttling rate in msg" prop="dispatchThrottlingRateInMsg">
+          <el-input v-model.number="setTopicSubscriptionDispatchRateInfo.dispatchThrottlingRateInMsg"></el-input>
+        </el-form-item>
+        <el-form-item label="Rate period in seconds" prop="ratePeriodInSecond">
+          <el-input v-model.number="setTopicSubscriptionDispatchRateInfo.ratePeriodInSecond"></el-input>
+        </el-form-item>
+        <el-form-item label="Relative to publish rate?" prop="relativeToPublishRate">
+          <el-checkbox v-model.boolean="setTopicSubscriptionDispatchRateInfo.relativeToPublishRate"></el-checkbox>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" @click="setTopicSubscriptionDispatchRate('setTopicSubscriptionDispatchRateForm')">Submit</el-button>
+          <el-button @click="setTopicSubscriptionDispatchRateVisible = false">Close</el-button>
+          <el-button type="danger" @click="deleteTopicSubscriptionDispatchRate('setTopicSubscriptionDispatchRateForm')">Unset</el-button>
+        </el-form-item>
+      </el-form>
+    </el-dialog>
+    
     <el-dialog title="Delete subscription" :visible.sync="deleteSubscriptionVisible">
       <el-form ref="deleteSubscriptionForm" :model="deleteSubscriptionInfo" :rules="deleteSubscriptionRules" label-width="200px">
         <el-form-item label="Subscription" prop="subscription">
@@ -500,15 +523,18 @@ export default {
         ratePeriodInSecond: 0,
         relativeToPublishRate: false
       },
-      setTopicDispatchRateInfo: {
+      setTopicDispatchRateRules: {
+      },
+      setTopicDispatchRateVisible: false,
+      setTopicSubscriptionDispatchRateInfo: {
         dispatchThrottlingRateInByte: 0,
         dispatchThrottlingRateInMsg: 0,
         ratePeriodInSecond: 0,
         relativeToPublishRate: false
       },
-      setTopicDispatchRateRules: {
+      setTopicSubscriptionDispatchRateRules: {
       },
-      setTopicDispatchRateVisible: false,
+      setTopicSubscriptionDispatchRateVisible: false,
       deleteSubscriptionVisible: false,
       deleteSubscriptionInfo: {
         subscription: '',
@@ -622,7 +648,7 @@ export default {
       
       // fetch policies information
       await Promise.all([
-        this.$pulsar.fetchTopicDispatchRateConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicSubscriptionDispatchRateConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
         this.$pulsar.fetchTopicRetentionConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
         this.$pulsar.fetchTopicPersistenceConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
         this.$pulsar.fetchTopicTTLConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
@@ -632,7 +658,8 @@ export default {
         this.$pulsar.fetchTopicInactivePoliciesConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
         this.$pulsar.fetchTopicDelayedDeliveryConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
         this.$pulsar.fetchTopicDeduplicationConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
-        this.$pulsar.fetchTopicCompationThresholdConfig(this.$route.params.persistent + '/' + topicOriginName, cluster)
+        this.$pulsar.fetchTopicCompationThresholdConfig(this.$route.params.persistent + '/' + topicOriginName, cluster),
+        this.$pulsar.fetchTopicDispatchRateConfig(this.$route.params.persistent + '/' + topicOriginName, cluster)
       ]).then((values) => {
         this.policies.policies.subscriptionDispatchRate = values[0];
         this.policies.policies.retention = values[1];
@@ -645,6 +672,7 @@ export default {
         this.policies.policies.delayedDelivery = values[8];
         this.policies.policies.deduplication = values[9];
         this.policies.policies.compationThreshold = values[10];
+        this.policies.policies.dispatchRate = values[11];
       })
       
       if (this.policies.stats.publishers) {
@@ -664,6 +692,9 @@ export default {
     },
 
     handleAction(action) {
+      const topicOriginName = this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic.replace(/-partition-[0-9]$/, '');
+      let self = this;
+    
       switch (action) {
         case 'peekMessages':
           this.peekMessagesVisible = true
@@ -685,13 +716,19 @@ export default {
           this.skipMesOnSubscriptionVisible = true
           break
         case 'setTopicDispatchRate':
-          const topicOriginName = this.$route.params.tenant + '/' + this.$route.params.namespace + '/' + this.$route.params.topic.replace(/-partition-[0-9]$/, '');
-          let self = this;
           this.$pulsar.fetchTopicDispatchRateConfig(this.$route.params.persistent + '/' + topicOriginName, this.currentTopic.cluster).then((info) => {
             if (info) {
               self.setTopicDispatchRateInfo = info
             }
             self.setTopicDispatchRateVisible = true
+          })
+          break
+        case 'setTopicSubscriptionDispatchRate':
+          this.$pulsar.fetchTopicSubscriptionDispatchRateConfig(this.$route.params.persistent + '/' + topicOriginName, this.currentTopic.cluster).then((info) => {
+            if (info) {
+              self.setTopicSubscriptionDispatchRateInfo = info
+            }
+            self.setTopicSubscriptionDispatchRateVisible = true
           })
           break
         case 'skipAllMesOnSubscription':
@@ -848,6 +885,42 @@ export default {
             message: 'Unset topic dispatch rate successfully!'
           })
           self.setTopicDispatchRateVisible = false
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
+          })
+        })
+    },
+    
+    setTopicSubscriptionDispatchRate(formName) {
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name.replace(/-partition-[0-9]+$/, '')
+      this.$pulsar.setTopicSubscriptionDispatchRate(topicName, this.setTopicSubscriptionDispatchRateInfo, this.currentTopic.cluster)
+        .then((resp) => {
+          this.$message({
+            type: 'success',
+            message: 'Set subscription dispatch rate successfully!'
+          })
+        })
+        .catch ((err) => {
+          this.$message({
+            type: 'error',
+            message: 'Error: ' + (err.response && err.response.data && err.response.data.reason || err)
+          })
+        })
+    },
+    
+    deleteTopicSubscriptionDispatchRate(formName) {
+      const topicName = (this.currentTopic.persistent ? 'persistent' : 'non-persistent') + '/' + this.currentTopic.name.replace(/-partition-[0-9]+$/, '')
+      self = this
+      this.$pulsar.deleteTopicSubscriptionDispatchRate(topicName, this.currentTopic.cluster)
+        .then((resp) => {
+          this.$message({
+            type: 'success',
+            message: 'Unset subscription dispatch rate successfully!'
+          })
+          self.setTopicSubscriptionDispatchRateVisible = false
         })
         .catch ((err) => {
           this.$message({
